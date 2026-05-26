@@ -28,6 +28,7 @@ namespace GiantessLLMMod.Core
         public ConfigEntry<bool> TimedTriggerEnabled;
         public ConfigEntry<float> TimedTriggerInterval;
         public ConfigEntry<bool> EventTriggerEnabled;
+        public ConfigEntry<float> EventTriggerCooldown;
         public ConfigEntry<int> MaxConversationHistory;
         public ConfigEntry<bool> EnableNativeDialogue;
         public ConfigEntry<int> DialogueTimeout;
@@ -88,6 +89,10 @@ namespace GiantessLLMMod.Core
             EventTriggerEnabled = config.Bind("Behavior", "EventTriggerEnabled",
                 true,
                 "Enable LLM calls after important game events. Uses a short 5 second cooldown.");
+
+            EventTriggerCooldown = config.Bind("Behavior", "EventTriggerCooldown",
+                20f,
+                new ConfigDescription("Seconds between event-triggered LLM calls.", new AcceptableValueRange<float>(5f, 300f)));
 
             MaxConversationHistory = config.Bind("Behavior", "MaxConversationHistory",
                 20,

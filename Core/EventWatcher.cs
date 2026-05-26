@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using BepInEx.Logging;
 using GiantessLLMMod.Models;
+using UnityEngine;
 
 namespace GiantessLLMMod.Core
 {
@@ -12,6 +13,7 @@ namespace GiantessLLMMod.Core
     {
         private readonly ManualLogSource _log;
         private readonly List<string> _pendingEvents = new List<string>();
+        private readonly Dictionary<string, float> _lastEventTime = new Dictionary<string, float>();
         private PlayerState _prevPlayer;
         private readonly Dictionary<string, string> _prevGiantessState = new Dictionary<string, string>();
 
@@ -55,13 +57,8 @@ namespace GiantessLLMMod.Core
                 if (_prevPlayer.IsBeingHeld && !p.IsBeingHeld && !p.InMouth && !p.InStomach)
                     AddEvent("The giantess put the player down.");
 
-                // Player died
-                if (_prevPlayer.IsAlive && !p.IsAlive)
-                    AddEvent("The player has died!");
-
-                // Player revived
-                if (!_prevPlayer.IsAlive && p.IsAlive)
-                    AddEvent("The player has been revived.");
+                // Death/revive can flicker while entering a scene, so do not use it as
+                // an automatic LLM event.
             }
 
             // Check giantess state changes
@@ -70,8 +67,8 @@ namespace GiantessLLMMod.Core
                 string key = g.Name ?? "Unknown";
                 if (_prevGiantessState.TryGetValue(key, out string prevState))
                 {
-                    if (prevState != g.CurrentState)
-                        AddEvent($"Giantess '{key}' changed state from {prevState} to {g.CurrentState}.");
+                    // Script/action state changes are often caused by the LLM action itself.
+                    // Treating them as events creates a feedback loop of repeated LLM calls.
                 }
                 _prevGiantessState[key] = g.CurrentState;
             }
@@ -104,7 +101,14 @@ namespace GiantessLLMMod.Core
 
         private void AddEvent(string description)
         {
+            float now = Time.time;
+            if (_lastEventTime.TryGetValue(description, out float lastTime) && now - lastTime < 10f)
+                return;
+
+            _lastEventTime[description] = now;
             _pendingEvents.Add(description);
+            if (_pendingEvents.Count > 10)
+                _pendingEvents.RemoveAt(0);
             _log.LogInfo($"[Event] {description}");
         }
     }

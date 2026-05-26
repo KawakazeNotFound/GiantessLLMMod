@@ -111,7 +111,7 @@ namespace GiantessLLMMod
                 float elapsed = Time.time - _lastAutoTriggerTime;
                 bool shouldTrigger = false;
 
-                if (_config.EventTriggerEnabled.Value && _eventWatcher.HasEvents && elapsed >= 5f)
+                if (_config.EventTriggerEnabled.Value && _eventWatcher.HasEvents && elapsed >= _config.EventTriggerCooldown.Value)
                     shouldTrigger = true;
 
                 if (_config.TimedTriggerEnabled.Value && elapsed >= _config.TimedTriggerInterval.Value)
