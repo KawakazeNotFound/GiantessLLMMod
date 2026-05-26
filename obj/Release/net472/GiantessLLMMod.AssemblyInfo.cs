@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("LLM-powered AI controller for Giantess Sandbox")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bcaf14ccd8e854be8e62eb5beb1032e413d24434")]
 [assembly: System.Reflection.AssemblyProductAttribute("GiantessLLMMod")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GiantessLLMMod")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -7755,3 +7755,1214 @@ G name=AINameData state=GTSSCRIPT dist=579 pred= hunger=1.2 horny=43.1 stom=0.0 
 [返回给 Mod 的动作 JSON]:
 {"action": "face_player", "emotion": "curious", "dialogue": "咦，你藏到哪里去了？让我找找看。", "ask": null}
 [HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=False
+G name=AINameData state=DO_NOTHING dist=39 pred= hunger=0.0 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The player has been revived.
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "face_player", "emotion": "curious", "dialogue": "你复活了？", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.1" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=False
+G name=AINameData state=DO_NOTHING dist=39 pred= hunger=0.0 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The player has been revived.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你复活了？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "idle", "emotion": "sad", "dialogue": "又死了？真让人失望……", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=False
+G name=AINameData state=DO_NOTHING dist=39 pred= hunger=0.0 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The player has been revived.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你复活了？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"又死了？真让人失望……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-208,109,-131) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=139 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from DO_NOTHING to GTSSCRIPT.
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "walk_to_player", "emotion": "happy", "dialogue": "你回来了！别再乱跑了，小心点。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=False
+G name=AINameData state=DO_NOTHING dist=39 pred= hunger=0.0 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The player has been revived.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你复活了？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"又死了？真让人失望……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-208,109,-131) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=139 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from DO_NOTHING to GTSSCRIPT.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你回来了！别再乱跑了，小心点。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "idle", "emotion": "sad", "dialogue": "怎么又死了……真是让人操心。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=False
+G name=AINameData state=DO_NOTHING dist=39 pred= hunger=0.0 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The player has been revived.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你复活了？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"又死了？真让人失望……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-208,109,-131) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=139 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from DO_NOTHING to GTSSCRIPT.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你回来了！别再乱跑了，小心点。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"怎么又死了……真是让人操心。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,19,-385) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=105 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from GTSSCRIPT to IDLE.
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "walk_to_player", "emotion": "happy", "dialogue": "你终于复活了，别乱跑，我马上过来。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=False
+G name=AINameData state=DO_NOTHING dist=39 pred= hunger=0.0 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The player has been revived.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你复活了？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"又死了？真让人失望……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-208,109,-131) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=139 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from DO_NOTHING to GTSSCRIPT.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你回来了！别再乱跑了，小心点。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"怎么又死了……真是让人操心。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,19,-385) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=105 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from GTSSCRIPT to IDLE.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你终于复活了，别乱跑，我马上过来。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-128,134,-141) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=250 pred= hunger=0.3 horny=45.7 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "walk_to_player", "emotion": "curious", "dialogue": "你在哪？我好像看不到你……", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=False
+G name=AINameData state=DO_NOTHING dist=39 pred= hunger=0.0 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The player has been revived.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你复活了？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"又死了？真让人失望……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-208,109,-131) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=139 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from DO_NOTHING to GTSSCRIPT.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你回来了！别再乱跑了，小心点。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"怎么又死了……真是让人操心。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,19,-385) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=105 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from GTSSCRIPT to IDLE.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你终于复活了，别乱跑，我马上过来。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-128,134,-141) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=250 pred= hunger=0.3 horny=45.7 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"curious\", \"dialogue\": \"你在哪？我好像看不到你……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=175 pred= hunger=1.4 horny=45.4 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.4 anger=0.0 looking=False
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE. | Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "walk_to_player", "emotion": "happy", "dialogue": "我好像看到你了，站在那别动，我过来接你。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=False
+G name=AINameData state=DO_NOTHING dist=39 pred= hunger=0.0 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The player has been revived.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你复活了？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"又死了？真让人失望……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-208,109,-131) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=139 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from DO_NOTHING to GTSSCRIPT.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你回来了！别再乱跑了，小心点。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"怎么又死了……真是让人操心。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,19,-385) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=105 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from GTSSCRIPT to IDLE.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你终于复活了，别乱跑，我马上过来。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-128,134,-141) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=250 pred= hunger=0.3 horny=45.7 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"curious\", \"dialogue\": \"你在哪？我好像看不到你……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=175 pred= hunger=1.4 horny=45.4 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.4 anger=0.0 looking=False
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE. | Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"我好像看到你了，站在那别动，我过来接你。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=175 pred= hunger=1.4 horny=48.9 stom=0.1 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE.
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "walk_to_player", "emotion": "happy", "dialogue": "我看到你了！要不要我带你出去转转？", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=False
+G name=AINameData state=DO_NOTHING dist=39 pred= hunger=0.0 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The player has been revived.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你复活了？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"又死了？真让人失望……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-208,109,-131) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=139 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from DO_NOTHING to GTSSCRIPT.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你回来了！别再乱跑了，小心点。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"怎么又死了……真是让人操心。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,19,-385) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=105 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from GTSSCRIPT to IDLE.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你终于复活了，别乱跑，我马上过来。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-128,134,-141) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=250 pred= hunger=0.3 horny=45.7 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"curious\", \"dialogue\": \"你在哪？我好像看不到你……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=175 pred= hunger=1.4 horny=45.4 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.4 anger=0.0 looking=False
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE. | Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"我好像看到你了，站在那别动，我过来接你。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=175 pred= hunger=1.4 horny=48.9 stom=0.1 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"我看到你了！要不要我带你出去转转？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=175 pred= hunger=1.5 horny=51.3 stom=0.1 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "walk_to_player", "emotion": "playful", "dialogue": "嘿嘿，让我找到你了！这次可别想跑哦。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=False
+G name=AINameData state=DO_NOTHING dist=39 pred= hunger=0.0 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The player has been revived.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你复活了？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"又死了？真让人失望……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-208,109,-131) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=139 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from DO_NOTHING to GTSSCRIPT.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你回来了！别再乱跑了，小心点。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"怎么又死了……真是让人操心。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,19,-385) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=105 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from GTSSCRIPT to IDLE.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你终于复活了，别乱跑，我马上过来。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-128,134,-141) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=250 pred= hunger=0.3 horny=45.7 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"curious\", \"dialogue\": \"你在哪？我好像看不到你……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=175 pred= hunger=1.4 horny=45.4 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.4 anger=0.0 looking=False
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE. | Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"我好像看到你了，站在那别动，我过来接你。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=175 pred= hunger=1.4 horny=48.9 stom=0.1 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"我看到你了！要不要我带你出去转转？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=175 pred= hunger=1.5 horny=51.3 stom=0.1 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"playful\", \"dialogue\": \"嘿嘿，让我找到你了！这次可别想跑哦。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=175 pred= hunger=1.6 horny=78.8 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE.
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "walk_to_player", "emotion": "playful", "dialogue": "我找到你了，小不点～这次要好好陪我玩哦。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=False
+G name=AINameData state=DO_NOTHING dist=39 pred= hunger=0.0 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The player has been revived.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你复活了？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"又死了？真让人失望……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-208,109,-131) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=139 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from DO_NOTHING to GTSSCRIPT.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你回来了！别再乱跑了，小心点。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"怎么又死了……真是让人操心。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,19,-385) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=105 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from GTSSCRIPT to IDLE.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你终于复活了，别乱跑，我马上过来。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-128,134,-141) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=250 pred= hunger=0.3 horny=45.7 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"curious\", \"dialogue\": \"你在哪？我好像看不到你……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=175 pred= hunger=1.4 horny=45.4 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.4 anger=0.0 looking=False
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE. | Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"我好像看到你了，站在那别动，我过来接你。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=175 pred= hunger=1.4 horny=48.9 stom=0.1 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"我看到你了！要不要我带你出去转转？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=175 pred= hunger=1.5 horny=51.3 stom=0.1 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"playful\", \"dialogue\": \"嘿嘿，让我找到你了！这次可别想跑哦。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=175 pred= hunger=1.6 horny=78.8 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"playful\", \"dialogue\": \"我找到你了，小不点～这次要好好陪我玩哦。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=175 pred= hunger=1.7 horny=86.2 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.2 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "walk_to_player", "emotion": "happy", "dialogue": "别动，我来了。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"又死了？真让人失望……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-208,109,-131) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=139 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from DO_NOTHING to GTSSCRIPT.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你回来了！别再乱跑了，小心点。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=0/0 alive=False pos=(0,0,0) stomach=False mouth=False held=False
+Events: The player has died!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"idle\", \"emotion\": \"sad\", \"dialogue\": \"怎么又死了……真是让人操心。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,19,-385) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=105 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Events: The player has been revived. | Giantess 'AINameData' changed state from GTSSCRIPT to IDLE.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"你终于复活了，别乱跑，我马上过来。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-128,134,-141) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=250 pred= hunger=0.3 horny=45.7 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"curious\", \"dialogue\": \"你在哪？我好像看不到你……\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=175 pred= hunger=1.4 horny=45.4 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.4 anger=0.0 looking=False
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE. | Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"我好像看到你了，站在那别动，我过来接你。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=175 pred= hunger=1.4 horny=48.9 stom=0.1 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"我看到你了！要不要我带你出去转转？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=175 pred= hunger=1.5 horny=51.3 stom=0.1 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.1 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"playful\", \"dialogue\": \"嘿嘿，让我找到你了！这次可别想跑哦。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=175 pred= hunger=1.6 horny=78.8 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"playful\", \"dialogue\": \"我找到你了，小不点～这次要好好陪我玩哦。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=175 pred= hunger=1.7 horny=86.2 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.2 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from IDLE to LOOKAROUND.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"happy\", \"dialogue\": \"别动，我来了。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-123,135,-150) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=175 pred= hunger=1.8 horny=87.5 stom=0.3 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=True
+Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE.
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "walk_to_player", "emotion": "playful", "dialogue": "我来了，别跑哦～", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -

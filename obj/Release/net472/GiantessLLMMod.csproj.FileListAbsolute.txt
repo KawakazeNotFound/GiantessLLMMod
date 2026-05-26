@@ -84,3 +84,4 @@ D:\Games\GaintessSandBox\Workdir-BepInEx\GiantessLLMMod\obj\Release\net472\Giant
 D:\Games\GaintessSandBox\Workdir-BepInEx\GiantessLLMMod\obj\Release\net472\Giantess.F7E17AC6.Up2Date
 D:\Games\GaintessSandBox\Workdir-BepInEx\GiantessLLMMod\obj\Release\net472\GiantessLLMMod.dll
 D:\Games\GaintessSandBox\Workdir-BepInEx\GiantessLLMMod\obj\Release\net472\GiantessLLMMod.pdb
+D:\Games\GaintessSandBox\Workdir-BepInEx\GiantessLLMMod\obj\Release\net472\GiantessLLMMod.sourcelink.json

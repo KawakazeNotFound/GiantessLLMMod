@@ -27,7 +27,7 @@ namespace GiantessLLMMod.UI
         private string _cfgApiUrl, _cfgApiKey, _cfgModel;
         private string _testActionInput = "face_player";
         private bool _cfgTimedTrigger, _cfgEventTrigger, _cfgDebug, _cfgNativeDialogue, _cfgDryRun;
-        private float _cfgTimedTriggerInterval;
+        private float _cfgTimedTriggerInterval, _cfgEventTriggerCooldown;
 
         // Log
         private readonly List<string> _logEntries = new List<string>();
@@ -226,6 +226,10 @@ namespace GiantessLLMMod.UI
             _cfgTimedTriggerInterval = GUILayout.HorizontalSlider(_cfgTimedTriggerInterval, 5f, 120f);
             GUILayout.EndHorizontal();
             _cfgEventTrigger = GUILayout.Toggle(_cfgEventTrigger, "Event trigger enabled");
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"Event cooldown: {_cfgEventTriggerCooldown:F0}s", GUILayout.Width(140));
+            _cfgEventTriggerCooldown = GUILayout.HorizontalSlider(_cfgEventTriggerCooldown, 5f, 300f);
+            GUILayout.EndHorizontal();
             _cfgNativeDialogue = GUILayout.Toggle(_cfgNativeDialogue, "Use native dialogue (Say/Ask)");
             _cfgDryRun = GUILayout.Toggle(_cfgDryRun, "Dry-run mode (no LLM calls)");
             _cfgDebug = GUILayout.Toggle(_cfgDebug, "Debug logging");
@@ -250,6 +254,7 @@ namespace GiantessLLMMod.UI
                 _config.TimedTriggerEnabled.Value = _cfgTimedTrigger;
                 _config.TimedTriggerInterval.Value = Mathf.Clamp(_cfgTimedTriggerInterval, 5f, 120f);
                 _config.EventTriggerEnabled.Value = _cfgEventTrigger;
+                _config.EventTriggerCooldown.Value = Mathf.Clamp(_cfgEventTriggerCooldown, 5f, 300f);
                 _config.EnableNativeDialogue.Value = _cfgNativeDialogue;
                 _config.DryRunMode.Value = _cfgDryRun;
                 _config.DebugLogging.Value = _cfgDebug;
@@ -287,6 +292,7 @@ namespace GiantessLLMMod.UI
             _cfgTimedTrigger = _config.TimedTriggerEnabled.Value;
             _cfgTimedTriggerInterval = _config.TimedTriggerInterval.Value;
             _cfgEventTrigger = _config.EventTriggerEnabled.Value;
+            _cfgEventTriggerCooldown = _config.EventTriggerCooldown.Value;
             _cfgDebug = _config.DebugLogging.Value;
             _cfgNativeDialogue = _config.EnableNativeDialogue.Value;
             _cfgDryRun = _config.DryRunMode.Value;
