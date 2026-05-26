@@ -173,7 +173,7 @@ namespace GiantessLLMMod
                 if (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1) || Input.GetMouseButtonUp(2))
                 {
                     _releaseOverlayInputOnMouseUp = false;
-                    UIInputBlocker.ReleaseInput();
+                    UIInputBlocker.ReleaseToGame();
                 }
                 else
                 {

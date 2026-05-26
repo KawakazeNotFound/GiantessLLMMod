@@ -26,6 +26,16 @@ namespace GiantessLLMMod.Patches
             ApplyCursorState();
         }
 
+        public static void ReleaseToGame()
+        {
+            InputCaptured = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            Input.ResetInputAxes();
+            _saved = false;
+            ForceGameCursorLockState();
+        }
+
         public static void ApplyCursorState()
         {
             if (IsOverlayVisible && InputCaptured)
@@ -49,6 +59,25 @@ namespace GiantessLLMMod.Patches
                 Cursor.visible = _previousCursorVisible;
                 Input.ResetInputAxes();
                 _saved = false;
+            }
+        }
+
+        private static void ForceGameCursorLockState()
+        {
+            try
+            {
+                var fpsType = AccessTools.TypeByName("FPSBehaviour");
+                if (fpsType == null) return;
+
+                var updateCursor = AccessTools.Method(fpsType, "UpdateCursorLockState");
+                if (updateCursor == null) return;
+
+                foreach (var fps in UnityEngine.Object.FindObjectsOfType(fpsType))
+                    updateCursor.Invoke(fps, new object[] { true });
+            }
+            catch
+            {
+                // Cursor lock fallback above is still useful if the game's helper is unavailable.
             }
         }
     }
