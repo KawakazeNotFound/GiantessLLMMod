@@ -8,7 +8,9 @@ using System.Reflection;
 using System.Text;
 using GiantessLLMMod.Core;
 using GiantessLLMMod.Models;
+using GiantessLLMMod.Patches;
 using GiantessLLMMod.UI;
+using HarmonyLib;
 using Newtonsoft.Json;
 using UnityEngine;
 
@@ -28,10 +30,12 @@ namespace GiantessLLMMod
         private ActionExecutor _executor;
         private EventWatcher _eventWatcher;
         private ModOverlayUI _ui;
+        private Harmony _harmony;
 
         // State
         private float _lastAutoTriggerTime = 0f;
         private bool _initialized = false;
+        private bool _releaseOverlayInputOnMouseUp = false;
         private GameStateSnapshot _lastSnapshot;
 
         private void Awake()
@@ -40,6 +44,9 @@ namespace GiantessLLMMod
 
             // Initialize config
             _config = new ConfigManager(Config);
+
+            _harmony = new Harmony(PLUGIN_GUID);
+            _harmony.PatchAll(typeof(UIInputBlocker).Assembly);
 
             // Initialize systems
             _collector = new GameStateCollector(Logger);
@@ -57,6 +64,8 @@ namespace GiantessLLMMod
 
         private void Update()
         {
+            SyncOverlayInputState();
+
             // Process LLM callbacks on main thread
             _llmClient.ProcessMainThreadCallbacks();
 
@@ -64,10 +73,17 @@ namespace GiantessLLMMod
             if (Input.GetKeyDown(_config.ToggleUIKey.Value))
             {
                 _ui.Toggle();
-                Input.ResetInputAxes();
+                UIInputBlocker.IsOverlayVisible = _ui.Visible;
+                if (_ui.Visible)
+                    UIInputBlocker.CaptureInput();
+                else
+                {
+                    _releaseOverlayInputOnMouseUp = false;
+                    UIInputBlocker.ReleaseInput();
+                }
             }
 
-            UpdateCursorForOverlay();
+            SyncOverlayInputState();
 
             if (Input.GetKeyDown(_config.ProbeKey.Value))
                 RunReflectionProbe();
@@ -129,13 +145,59 @@ namespace GiantessLLMMod
 
         private void UpdateCursorForOverlay()
         {
-            if (!_ui.Visible) return;
+            SyncOverlayInputState();
+        }
 
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+        private void SyncOverlayInputState()
+        {
+            if (_ui == null) return;
+
+            UIInputBlocker.IsOverlayVisible = _ui.Visible;
+
+            if (!_ui.Visible)
+            {
+                _releaseOverlayInputOnMouseUp = false;
+                UIInputBlocker.ReleaseInput();
+                return;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                _releaseOverlayInputOnMouseUp = false;
+                UIInputBlocker.CaptureInput();
+                return;
+            }
+
+            if (_releaseOverlayInputOnMouseUp)
+            {
+                if (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1) || Input.GetMouseButtonUp(2))
+                {
+                    _releaseOverlayInputOnMouseUp = false;
+                    UIInputBlocker.ReleaseInput();
+                }
+                else
+                {
+                    UIInputBlocker.CaptureInput();
+                }
+                return;
+            }
 
             if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2))
-                Input.ResetInputAxes();
+            {
+                if (_ui.ContainsScreenMouse())
+                    UIInputBlocker.CaptureInput();
+                else if (UIInputBlocker.InputCaptured)
+                    _releaseOverlayInputOnMouseUp = true;
+            }
+
+            UIInputBlocker.ApplyCursorState();
+        }
+
+        private void OnDestroy()
+        {
+            UIInputBlocker.IsOverlayVisible = false;
+            UIInputBlocker.ApplyCursorState();
+            _harmony?.UnpatchSelf();
         }
 
         // ──────────────────── LLM Trigger ────────────────────

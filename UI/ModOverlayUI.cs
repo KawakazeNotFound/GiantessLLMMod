@@ -54,6 +54,12 @@ namespace GiantessLLMMod.UI
 
         public void Toggle() => _visible = !_visible;
 
+        public bool ContainsScreenMouse()
+        {
+            Vector2 guiMouse = new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
+            return _windowRect.Contains(guiMouse);
+        }
+
         public void SetLastState(GameStateSnapshot state) => _lastState = state;
 
         public void AddChatEntry(string sender, string message, Color color)
