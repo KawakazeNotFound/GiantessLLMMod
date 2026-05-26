@@ -59,8 +59,14 @@ namespace GiantessLLMMod.Models
 
         // Stomach
         [JsonProperty("stomach_activity")] public float StomachActivity;
+        [JsonProperty("stomach_activity_delta")] public float StomachActivityDelta;
+        [JsonProperty("stomach_activity_rate")] public float StomachActivityRate;
         [JsonProperty("stomach_acid")] public float StomachAcid;
+        [JsonProperty("stomach_acid_delta")] public float StomachAcidDelta;
+        [JsonProperty("stomach_acid_rate")] public float StomachAcidRate;
         [JsonProperty("burp_buildup")] public float BurpBuildUp;
+        [JsonProperty("burp_buildup_delta")] public float BurpBuildUpDelta;
+        [JsonProperty("burp_buildup_rate")] public float BurpBuildUpRate;
         [JsonProperty("digested_food")] public float DigestedFood;
 
         // Holding state

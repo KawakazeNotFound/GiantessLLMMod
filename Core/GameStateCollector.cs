@@ -102,6 +102,16 @@ namespace GiantessLLMMod.Core
         private PropertyInfo _mem_isLookingAtUsProp;
         private PropertyInfo _mem_timeInLocationProp;
 
+        private readonly Dictionary<string, StomachTrendSample> _previousStomachSamples = new Dictionary<string, StomachTrendSample>();
+
+        private struct StomachTrendSample
+        {
+            public float Time;
+            public float Activity;
+            public float Acid;
+            public float Burp;
+        }
+
         public GameStateCollector(ManualLogSource log)
         {
             _log = log;
@@ -369,7 +379,7 @@ namespace GiantessLLMMod.Core
                 _log.LogWarning($"Error finding GiantessAI objects: {ex.Message}");
             }
 
-            return list;
+            return list.OrderBy(g => g.DistanceToPlayer).ToList();
         }
 
         private GiantessState CollectSingleGiantess(MonoBehaviour ai, PlayerState player)
@@ -421,6 +431,7 @@ namespace GiantessLLMMod.Core
                 gs.StomachAcid = GetField<float>(stomach, _stom_acid, 0f);
                 gs.BurpBuildUp = GetField<float>(stomach, _stom_burp, 0f);
                 gs.DigestedFood = GetField<float>(stomach, _stom_food, 0f);
+                ApplyStomachTrend(gs);
             }
 
             // Held objects
@@ -434,6 +445,34 @@ namespace GiantessLLMMod.Core
             gs.PlayerMemory = CollectPlayerMemory(ai);
 
             return gs;
+        }
+
+        private void ApplyStomachTrend(GiantessState gs)
+        {
+            string key = gs.Name ?? "Unknown";
+            float now = Time.time;
+
+            if (_previousStomachSamples.TryGetValue(key, out var prev))
+            {
+                float dt = Math.Max(0.001f, now - prev.Time);
+
+                gs.StomachActivityDelta = gs.StomachActivity - prev.Activity;
+                gs.StomachActivityRate = gs.StomachActivityDelta / dt;
+
+                gs.StomachAcidDelta = gs.StomachAcid - prev.Acid;
+                gs.StomachAcidRate = gs.StomachAcidDelta / dt;
+
+                gs.BurpBuildUpDelta = gs.BurpBuildUp - prev.Burp;
+                gs.BurpBuildUpRate = gs.BurpBuildUpDelta / dt;
+            }
+
+            _previousStomachSamples[key] = new StomachTrendSample
+            {
+                Time = now,
+                Activity = gs.StomachActivity,
+                Acid = gs.StomachAcid,
+                Burp = gs.BurpBuildUp
+            };
         }
 
         private PlayerMemoryData CollectPlayerMemory(MonoBehaviour ai)
@@ -782,7 +821,18 @@ namespace GiantessLLMMod.Core
         public MonoBehaviour GetFirstGiantessAI()
         {
             if (_giantessAIType == null) return null;
-            return UnityEngine.Object.FindObjectOfType(_giantessAIType) as MonoBehaviour;
+
+            var all = UnityEngine.Object.FindObjectsOfType(_giantessAIType)
+                .OfType<MonoBehaviour>()
+                .ToList();
+            if (all.Count == 0) return null;
+
+            var player = CollectPlayerState();
+            var playerPos = new Vector3(player.X, player.Y, player.Z);
+
+            return all
+                .OrderBy(ai => Vector3.Distance(ai.transform.position, playerPos))
+                .FirstOrDefault();
         }
 
         /// <summary>Get the GiantessAI type (for casting/reflection).</summary>

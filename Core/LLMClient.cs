@@ -314,7 +314,22 @@ namespace GiantessLLMMod.Core
             // Giantesses
             foreach (var g in state.Giantesses)
             {
-                sb.Append($"G name={g.Name} state={g.CurrentState} dist={g.DistanceToPlayer:F0} pred={g.PredatorType} hunger={g.Hunger:F1} horny={g.Horniness:F1} stom={g.StomachActivity:F1} burp={g.BurpBuildUp:F1} mouthObj={g.HasObjectInMouth}");
+                sb.Append($"G name={g.Name} state={g.CurrentState} dist={g.DistanceToPlayer:F0} pred={g.PredatorType} hunger={g.Hunger:F1} horny={g.Horniness:F1} stom={g.StomachActivity:F1}");
+
+                if (Math.Abs(g.StomachActivityRate) > 0.05f)
+                    sb.Append($" stomRate={g.StomachActivityRate:+0.0;-0.0}");
+
+                sb.Append($" acid={g.StomachAcid:F1}");
+
+                if (Math.Abs(g.StomachAcidRate) > 0.05f)
+                    sb.Append($" acidRate={g.StomachAcidRate:+0.0;-0.0}");
+
+                sb.Append($" burp={g.BurpBuildUp:F1}");
+
+                if (Math.Abs(g.BurpBuildUpRate) > 0.05f)
+                    sb.Append($" burpRate={g.BurpBuildUpRate:+0.0;-0.0}");
+
+                sb.Append($" mouthObj={g.HasObjectInMouth}");
 
                 if (g.HeldObjectName != null)
                     sb.Append($" held={g.HeldObjectName}");

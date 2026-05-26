@@ -8966,3 +8966,1572 @@ Events: Giantess 'AINameData' changed state from LOOKAROUND to IDLE.
 [返回给 Mod 的动作 JSON]:
 {"action": "walk_to_player", "emotion": "playful", "dialogue": "我来了，别跑哦～", "ask": null}
 [HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+=========================================
+  LLM proxy started: http://127.0.0.1:11434
+  OpenAI endpoint: /v1/chat/completions
+  Ollama endpoints: /api/chat, /api/generate
+=========================================
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-232,-9,-410) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=399 pred= hunger=28.7 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=InsideZone rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 你好喵
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "face_player", "emotion": "curious", "dialogue": "你好，小不点。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.1" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-232,-9,-410) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=399 pred= hunger=28.7 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=InsideZone rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 你好喵
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你好，小不点。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-83,-9,-543) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=43 pred= hunger=29.3 horny=0.0 stom=3.2 burp=0.0 mouthObj=False memSee=True loc=InsideZone rel=PROTECTIVE int=0.2 anger=0.0 looking=False
+Player says: 把我抓起来
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "pick_up", "emotion": "playful", "dialogue": "好啊，让我看看你这小家伙想做什么。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-232,-9,-410) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=399 pred= hunger=28.7 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=InsideZone rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 你好喵
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你好，小不点。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-83,-9,-543) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=43 pred= hunger=29.3 horny=0.0 stom=3.2 burp=0.0 mouthObj=False memSee=True loc=InsideZone rel=PROTECTIVE int=0.2 anger=0.0 looking=False
+Player says: 把我抓起来
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"pick_up\", \"emotion\": \"playful\", \"dialogue\": \"好啊，让我看看你这小家伙想做什么。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,20,-385) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=107 pred= hunger=1.5 horny=42.9 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.4 anger=0.0 looking=True
+Player says: roam
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "walk_to_player", "emotion": "curious", "dialogue": "你在逛什么呢？", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-232,-9,-410) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=399 pred= hunger=28.7 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=InsideZone rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 你好喵
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你好，小不点。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-83,-9,-543) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=43 pred= hunger=29.3 horny=0.0 stom=3.2 burp=0.0 mouthObj=False memSee=True loc=InsideZone rel=PROTECTIVE int=0.2 anger=0.0 looking=False
+Player says: 把我抓起来
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"pick_up\", \"emotion\": \"playful\", \"dialogue\": \"好啊，让我看看你这小家伙想做什么。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,20,-385) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=107 pred= hunger=1.5 horny=42.9 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.4 anger=0.0 looking=True
+Player says: roam
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"curious\", \"dialogue\": \"你在逛什么呢？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-124,135,-161) stomach=False mouth=False held=False
+G name=AINameData state=PICKUP dist=227 pred= hunger=3.6 horny=37.3 stom=3.8 burp=0.0 mouthObj=False memSee=False loc=Outside rel=NONE int=4.4 anger=0.0 looking=False
+Player says: 看我看我
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "face_player", "emotion": "playful", "dialogue": "看到了，你这个小不点在打什么主意？", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-232,-9,-410) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=399 pred= hunger=28.7 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=InsideZone rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 你好喵
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你好，小不点。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-83,-9,-543) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=43 pred= hunger=29.3 horny=0.0 stom=3.2 burp=0.0 mouthObj=False memSee=True loc=InsideZone rel=PROTECTIVE int=0.2 anger=0.0 looking=False
+Player says: 把我抓起来
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"pick_up\", \"emotion\": \"playful\", \"dialogue\": \"好啊，让我看看你这小家伙想做什么。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,20,-385) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=107 pred= hunger=1.5 horny=42.9 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.4 anger=0.0 looking=True
+Player says: roam
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"curious\", \"dialogue\": \"你在逛什么呢？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-124,135,-161) stomach=False mouth=False held=False
+G name=AINameData state=PICKUP dist=227 pred= hunger=3.6 horny=37.3 stom=3.8 burp=0.0 mouthObj=False memSee=False loc=Outside rel=NONE int=4.4 anger=0.0 looking=False
+Player says: 看我看我
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"playful\", \"dialogue\": \"看到了，你这个小不点在打什么主意？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=True
+G name=AINameData state=DO_NOTHING dist=36 pred= hunger=0.0 horny=49.7 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=InStomach rel=NONE int=0.0 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "face_player", "emotion": "mischievous", "dialogue": "抓到你了~乖乖待着别乱动哦，不然我可会把你吃掉。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-232,-9,-410) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=399 pred= hunger=28.7 horny=0.0 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=InsideZone rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 你好喵
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你好，小不点。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-83,-9,-543) stomach=False mouth=False held=False
+G name=AINameData state=GTSSCRIPT dist=43 pred= hunger=29.3 horny=0.0 stom=3.2 burp=0.0 mouthObj=False memSee=True loc=InsideZone rel=PROTECTIVE int=0.2 anger=0.0 looking=False
+Player says: 把我抓起来
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"pick_up\", \"emotion\": \"playful\", \"dialogue\": \"好啊，让我看看你这小家伙想做什么。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,20,-385) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=107 pred= hunger=1.5 horny=42.9 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.4 anger=0.0 looking=True
+Player says: roam
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"curious\", \"dialogue\": \"你在逛什么呢？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-124,135,-161) stomach=False mouth=False held=False
+G name=AINameData state=PICKUP dist=227 pred= hunger=3.6 horny=37.3 stom=3.8 burp=0.0 mouthObj=False memSee=False loc=Outside rel=NONE int=4.4 anger=0.0 looking=False
+Player says: 看我看我
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"playful\", \"dialogue\": \"看到了，你这个小不点在打什么主意？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=True
+G name=AINameData state=DO_NOTHING dist=36 pred= hunger=0.0 horny=49.7 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=InStomach rel=NONE int=0.0 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"mischievous\", \"dialogue\": \"抓到你了~乖乖待着别乱动哦，不然我可会把你吃掉。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(20,30,103) stomach=True mouth=False held=False
+G name=AINameData state=DO_NOTHING dist=44 pred= hunger=0.0 horny=49.7 stom=0.0 burp=48.5 mouthObj=False memSee=False loc=InStomach rel=NONE int=0.0 anger=0.0 looking=False
+Events: Player was swallowed and is now in the giantess's stomach!
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "pat_stomach", "emotion": "playful", "dialogue": "小家伙在里面还暖和吧？乖乖待着别乱动哦。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+=========================================
+  LLM proxy started: http://127.0.0.1:11434
+  OpenAI endpoint: /v1/chat/completions
+  Ollama endpoints: /api/chat, /api/generate
+=========================================
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=True
+G name=AINameData state=DO_NOTHING dist=36 pred= hunger=0.0 horny=39.8 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=InStomach rel=NONE int=0.0 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "face_player", "emotion": "playful", "dialogue": "哎呀，我抓住你了，小家伙。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.1" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-6,-7,79) stomach=False mouth=False held=True
+G name=AINameData state=DO_NOTHING dist=36 pred= hunger=0.0 horny=39.8 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=InStomach rel=NONE int=0.0 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"playful\", \"dialogue\": \"哎呀，我抓住你了，小家伙。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(22,28,105) stomach=False mouth=False held=False
+G name=AINameData state=DO_NOTHING dist=42 pred= hunger=0.0 horny=39.8 stom=0.0 burp=56.6 mouthObj=False memSee=False loc=InIntestines rel=NONE int=0.0 anger=0.0 looking=False
+Events: Player was swallowed and is now in the giantess's stomach! | Player escaped from the stomach! | Player escaped from the stomach!
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "face_player", "emotion": "surprised", "dialogue": "哦？居然逃出来了？真是个小机灵鬼呢。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+=========================================
+  LLM proxy started: http://127.0.0.1:11434
+  OpenAI endpoint: /v1/chat/completions
+  Ollama endpoints: /api/chat, /api/generate
+=========================================
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-23,1,-456) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=128 pred= hunger=0.2 horny=45.0 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 啊...你好？
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "face_player", "emotion": "curious", "dialogue": "你好呀，小家伙。你从哪里来的？", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.1" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-23,1,-456) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=128 pred= hunger=0.2 horny=45.0 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 啊...你好？
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你好呀，小家伙。你从哪里来的？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-25,1,-446) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=115 pred= hunger=1.5 horny=44.1 stom=0.1 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 我想被你吃掉
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "face_player", "emotion": "surprised", "dialogue": "你确定？我可不会轻易让你出来的哦...", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-23,1,-456) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=128 pred= hunger=0.2 horny=45.0 stom=0.0 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 啊...你好？
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"你好呀，小家伙。你从哪里来的？\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-25,1,-446) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=115 pred= hunger=1.5 horny=44.1 stom=0.1 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 我想被你吃掉
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"surprised\", \"dialogue\": \"你确定？我可不会轻易让你出来的哦...\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-25,1,-446) stomach=False mouth=False held=False
+G name=AINameData state=LOOKAROUND dist=115 pred= hunger=1.8 horny=43.2 stom=0.4 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.1 anger=0.0 looking=False
+Player says: 你先把我拿起来吧
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "pick_up", "emotion": "playful", "dialogue": "好啊，让我好好看看你~", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,29,-385) stomach=False mouth=False held=True
+G name=AINameData state=PLAYER_CONTROL dist=9 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "face_player", "emotion": "curious", "dialogue": "哎呀，捡到一个小不点呢。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.1" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,29,-385) stomach=False mouth=False held=True
+G name=AINameData state=PLAYER_CONTROL dist=9 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"哎呀，捡到一个小不点呢。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-156,145,-430) stomach=False mouth=False held=True
+G name=AINameData state=PLAYER_CONTROL dist=141 pred= hunger=1.6 horny=44.4 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.7 anger=0.0 looking=False
+Player says: 先把我放下来好不好
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "drop", "emotion": "playful", "dialogue": "好好好，放你下来，可别乱跑哦~", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,29,-385) stomach=False mouth=False held=True
+G name=AINameData state=PLAYER_CONTROL dist=9 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"哎呀，捡到一个小不点呢。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-156,145,-430) stomach=False mouth=False held=True
+G name=AINameData state=PLAYER_CONTROL dist=141 pred= hunger=1.6 horny=44.4 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.7 anger=0.0 looking=False
+Player says: 先把我放下来好不好
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"drop\", \"emotion\": \"playful\", \"dialogue\": \"好好好，放你下来，可别乱跑哦~\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(3,385,-256) stomach=False mouth=False held=False
+G name=AINameData state=PLAYER_CONTROL dist=439 pred= hunger=1.9 horny=43.6 stom=0.8 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=1.2 anger=0.0 looking=False
+Events: The giantess put the player down.
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "face_player", "emotion": "gentle", "dialogue": "小不点，要小心点哦，我会看着你的。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,29,-385) stomach=False mouth=False held=True
+G name=AINameData state=PLAYER_CONTROL dist=9 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"哎呀，捡到一个小不点呢。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-156,145,-430) stomach=False mouth=False held=True
+G name=AINameData state=PLAYER_CONTROL dist=141 pred= hunger=1.6 horny=44.4 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.7 anger=0.0 looking=False
+Player says: 先把我放下来好不好
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"drop\", \"emotion\": \"playful\", \"dialogue\": \"好好好，放你下来，可别乱跑哦~\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(3,385,-256) stomach=False mouth=False held=False
+G name=AINameData state=PLAYER_CONTROL dist=439 pred= hunger=1.9 horny=43.6 stom=0.8 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=1.2 anger=0.0 looking=False
+Events: The giantess put the player down.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"gentle\", \"dialogue\": \"小不点，要小心点哦，我会看着你的。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-165,135,-168) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=256 pred= hunger=3.0 horny=40.4 stom=2.9 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 把我抓起来好不好
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "pick_up", "emotion": "playful", "dialogue": "哦？刚才还让我放下你，现在又想要了？真是个善变的小家伙呢~", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,29,-385) stomach=False mouth=False held=True
+G name=AINameData state=PLAYER_CONTROL dist=9 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"哎呀，捡到一个小不点呢。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-156,145,-430) stomach=False mouth=False held=True
+G name=AINameData state=PLAYER_CONTROL dist=141 pred= hunger=1.6 horny=44.4 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.7 anger=0.0 looking=False
+Player says: 先把我放下来好不好
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"drop\", \"emotion\": \"playful\", \"dialogue\": \"好好好，放你下来，可别乱跑哦~\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(3,385,-256) stomach=False mouth=False held=False
+G name=AINameData state=PLAYER_CONTROL dist=439 pred= hunger=1.9 horny=43.6 stom=0.8 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=1.2 anger=0.0 looking=False
+Events: The giantess put the player down.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"gentle\", \"dialogue\": \"小不点，要小心点哦，我会看着你的。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-165,135,-168) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=256 pred= hunger=3.0 horny=40.4 stom=2.9 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 把我抓起来好不好
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"pick_up\", \"emotion\": \"playful\", \"dialogue\": \"哦？刚才还让我放下你，现在又想要了？真是个善变的小家伙呢~\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-165,1,-178) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=2860 pred= hunger=1.9 horny=32.6 stom=7.6 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 快过来快过来
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "walk_to_player", "emotion": "playful", "dialogue": "来了来了，别着急嘛，小不点~", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,29,-385) stomach=False mouth=False held=True
+G name=AINameData state=PLAYER_CONTROL dist=9 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"哎呀，捡到一个小不点呢。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-156,145,-430) stomach=False mouth=False held=True
+G name=AINameData state=PLAYER_CONTROL dist=141 pred= hunger=1.6 horny=44.4 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.7 anger=0.0 looking=False
+Player says: 先把我放下来好不好
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"drop\", \"emotion\": \"playful\", \"dialogue\": \"好好好，放你下来，可别乱跑哦~\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(3,385,-256) stomach=False mouth=False held=False
+G name=AINameData state=PLAYER_CONTROL dist=439 pred= hunger=1.9 horny=43.6 stom=0.8 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=1.2 anger=0.0 looking=False
+Events: The giantess put the player down.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"gentle\", \"dialogue\": \"小不点，要小心点哦，我会看着你的。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-165,135,-168) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=256 pred= hunger=3.0 horny=40.4 stom=2.9 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 把我抓起来好不好
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"pick_up\", \"emotion\": \"playful\", \"dialogue\": \"哦？刚才还让我放下你，现在又想要了？真是个善变的小家伙呢~\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-165,1,-178) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=2860 pred= hunger=1.9 horny=32.6 stom=7.6 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 快过来快过来
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"playful\", \"dialogue\": \"来了来了，别着急嘛，小不点~\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-256,1,-167) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=43 pred= hunger=0.0 horny=30.4 stom=16.6 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=5.0 anger=0.0 looking=False
+Player says: 快把我捡起来
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "pick_up", "emotion": "playful", "dialogue": "遵命，这就把你捧在手心里~", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,29,-385) stomach=False mouth=False held=True
+G name=AINameData state=PLAYER_CONTROL dist=9 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"curious\", \"dialogue\": \"哎呀，捡到一个小不点呢。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-156,145,-430) stomach=False mouth=False held=True
+G name=AINameData state=PLAYER_CONTROL dist=141 pred= hunger=1.6 horny=44.4 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.7 anger=0.0 looking=False
+Player says: 先把我放下来好不好
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"drop\", \"emotion\": \"playful\", \"dialogue\": \"好好好，放你下来，可别乱跑哦~\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(3,385,-256) stomach=False mouth=False held=False
+G name=AINameData state=PLAYER_CONTROL dist=439 pred= hunger=1.9 horny=43.6 stom=0.8 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=1.2 anger=0.0 looking=False
+Events: The giantess put the player down.
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"gentle\", \"dialogue\": \"小不点，要小心点哦，我会看着你的。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-165,135,-168) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=256 pred= hunger=3.0 horny=40.4 stom=2.9 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 把我抓起来好不好
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"pick_up\", \"emotion\": \"playful\", \"dialogue\": \"哦？刚才还让我放下你，现在又想要了？真是个善变的小家伙呢~\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-165,1,-178) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=2860 pred= hunger=1.9 horny=32.6 stom=7.6 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.0 anger=0.0 looking=False
+Player says: 快过来快过来
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"walk_to_player\", \"emotion\": \"playful\", \"dialogue\": \"来了来了，别着急嘛，小不点~\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-256,1,-167) stomach=False mouth=False held=False
+G name=AINameData state=IDLE dist=43 pred= hunger=0.0 horny=30.4 stom=16.6 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=5.0 anger=0.0 looking=False
+Player says: 快把我捡起来
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"pick_up\", \"emotion\": \"playful\", \"dialogue\": \"遵命，这就把你捧在手心里~\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-162,30,-385) stomach=False mouth=False held=True
+G name=AINameData state=PLAYER_CONTROL dist=10 pred= hunger=0.0 horny=45.6 stom=0.0 burp=0.0 mouthObj=False memSee=True loc=Outside rel=NONE int=0.0 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "face_player", "emotion": "curious", "dialogue": "被我抓住了，想做什么呢？", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+[代理错误] [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+Traceback (most recent call last):
+  File "d:\Games\GaintessSandBox\Workdir-BepInEx\GiantessLLMMod\api.py", line 166, in do_POST
+    self.send_json(
+  File "d:\Games\GaintessSandBox\Workdir-BepInEx\GiantessLLMMod\api.py", line 125, in send_json
+    self.end_headers()
+  File "C:\Python312\Lib\http\server.py", line 538, in end_headers
+    self.flush_headers()
+  File "C:\Python312\Lib\http\server.py", line 542, in flush_headers
+    self.wfile.write(b"".join(self._headers_buffer))
+  File "C:\Python312\Lib\socketserver.py", line 840, in write
+    self._sock.sendall(b)
+ConnectionResetError: [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 500 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-158,20,-395) stomach=False mouth=False held=True
+G name=AINameData state=IDLE dist=108 pred= hunger=1.6 horny=94.8 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.2 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "face_player", "emotion": "gentle", "dialogue": "别担心，你现在很安全。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.1" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-158,20,-395) stomach=False mouth=False held=True
+G name=AINameData state=IDLE dist=108 pred= hunger=1.6 horny=94.8 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.2 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"gentle\", \"dialogue\": \"别担心，你现在很安全。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-55,267,-331) stomach=False mouth=True held=False
+G name=AINameData state=PLAYER_CONTROL dist=276 pred= hunger=1.9 horny=94.0 stom=0.4 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.5 anger=0.0 looking=False
+Events: The giantess put the player down. | Player is now inside the giantess's mouth!
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "tease_mouth", "emotion": "gentle", "dialogue": "别怕，我不会伤害你的。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-158,20,-395) stomach=False mouth=False held=True
+G name=AINameData state=IDLE dist=108 pred= hunger=1.6 horny=94.8 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.2 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"gentle\", \"dialogue\": \"别担心，你现在很安全。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-55,267,-331) stomach=False mouth=True held=False
+G name=AINameData state=PLAYER_CONTROL dist=276 pred= hunger=1.9 horny=94.0 stom=0.4 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.5 anger=0.0 looking=False
+Events: The giantess put the player down. | Player is now inside the giantess's mouth!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"tease_mouth\", \"emotion\": \"gentle\", \"dialogue\": \"别怕，我不会伤害你的。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-92,183,-346) stomach=True mouth=False held=False
+G name=AINameData state=IDLE dist=193 pred= hunger=0.0 horny=99.4 stom=3.8 burp=46.9 mouthObj=False memSee=False loc=InStomach rel=PROTECTIVE int=0.6 anger=0.0 looking=False
+Events: The giantess picked up the player! | Player was swallowed and is now in the giantess's stomach!
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "pat_stomach", "emotion": "embarrassed", "dialogue": "对不起，我太饿了，没忍住就把你吞下去了。别怕，我会好好保护你的。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-158,20,-395) stomach=False mouth=False held=True
+G name=AINameData state=IDLE dist=108 pred= hunger=1.6 horny=94.8 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.2 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"gentle\", \"dialogue\": \"别担心，你现在很安全。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-55,267,-331) stomach=False mouth=True held=False
+G name=AINameData state=PLAYER_CONTROL dist=276 pred= hunger=1.9 horny=94.0 stom=0.4 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.5 anger=0.0 looking=False
+Events: The giantess put the player down. | Player is now inside the giantess's mouth!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"tease_mouth\", \"emotion\": \"gentle\", \"dialogue\": \"别怕，我不会伤害你的。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-92,183,-346) stomach=True mouth=False held=False
+G name=AINameData state=IDLE dist=193 pred= hunger=0.0 horny=99.4 stom=3.8 burp=46.9 mouthObj=False memSee=False loc=InStomach rel=PROTECTIVE int=0.6 anger=0.0 looking=False
+Events: The giantess picked up the player! | Player was swallowed and is now in the giantess's stomach!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"pat_stomach\", \"emotion\": \"embarrassed\", \"dialogue\": \"对不起，我太饿了，没忍住就把你吞下去了。别怕，我会好好保护你的。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-92,186,-344) stomach=True mouth=False held=False
+G name=AINameData state=IDLE dist=195 pred= hunger=0.0 horny=98.7 stom=10.5 burp=56.5 mouthObj=False memSee=False loc=InStomach rel=PROTECTIVE int=0.6 anger=0.0 looking=False
+Player says: 能让我出去吗？
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "burp", "emotion": "embarrassed", "dialogue": "抱歉，我试试能不能把你弄出来……嗝！", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
+
+[Mod /v1/chat/completions 请求]:
+{
+  "model": "model",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Control the giantess in Giantess Sandbox.
+
+Reply ONLY one valid JSON object:
+{\"action\":\"action_name\",\"emotion\":\"emotion_name\",\"dialogue\":\"text or null\",\"ask\":null}
+
+Rules:
+- Use only action names from the whitelist.
+- Use only emotion names from the whitelist.
+- Keep dialogue <= 180 characters.
+- Dialogue should be Chinese unless the player clearly asks for another language.
+- Respect the current relationship, memory, and player situation.
+- pat_stomach only makes sense if player.inStomach is true.
+- burp only makes sense if burp > 0 or player.inStomach is true.
+- If unsure, use {\"action\":\"face_player\",\"emotion\":\"curious\",\"dialogue\":null,\"ask\":null}.
+
+Action whitelist, 23 actions:
+idle, face_player, walk_to_player, follow_player, pick_up, eat, put_in_mouth, swallow, take_out_mouth, pat_stomach, tease_mouth, tease_stomach, drop, dangle, dangle_drop, burp, put_on_stomach, lick, put_in_bra, invite_into_mouth, play_with_food, lay_down, stand_up
+
+Emotion whitelist:
+neutral, happy, angry, curious, excited, surprised, sad, playful, smug, mischievous, horny, aroused, pleasure, hungry, craving, licking, tasting, savoring, crazy, shy, embarrassed, crying, sleepy, intense, gentle, smiling, grinning"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-158,20,-395) stomach=False mouth=False held=True
+G name=AINameData state=IDLE dist=108 pred= hunger=1.6 horny=94.8 stom=0.2 burp=0.0 mouthObj=False memSee=True loc=Outside rel=PROTECTIVE int=0.2 anger=0.0 looking=False
+Events: The giantess picked up the player!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"face_player\", \"emotion\": \"gentle\", \"dialogue\": \"别担心，你现在很安全。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-55,267,-331) stomach=False mouth=True held=False
+G name=AINameData state=PLAYER_CONTROL dist=276 pred= hunger=1.9 horny=94.0 stom=0.4 burp=0.0 mouthObj=False memSee=False loc=Outside rel=PROTECTIVE int=0.5 anger=0.0 looking=False
+Events: The giantess put the player down. | Player is now inside the giantess's mouth!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"tease_mouth\", \"emotion\": \"gentle\", \"dialogue\": \"别怕，我不会伤害你的。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-92,183,-346) stomach=True mouth=False held=False
+G name=AINameData state=IDLE dist=193 pred= hunger=0.0 horny=99.4 stom=3.8 burp=46.9 mouthObj=False memSee=False loc=InStomach rel=PROTECTIVE int=0.6 anger=0.0 looking=False
+Events: The giantess picked up the player! | Player was swallowed and is now in the giantess's stomach!
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"pat_stomach\", \"emotion\": \"embarrassed\", \"dialogue\": \"对不起，我太饿了，没忍住就把你吞下去了。别怕，我会好好保护你的。\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-92,186,-344) stomach=True mouth=False held=False
+G name=AINameData state=IDLE dist=195 pred= hunger=0.0 horny=98.7 stom=10.5 burp=56.5 mouthObj=False memSee=False loc=InStomach rel=PROTECTIVE int=0.6 anger=0.0 looking=False
+Player says: 能让我出去吗？
+"
+    },
+    {
+      "role": "assistant",
+      "content": "{\"action\": \"burp\", \"emotion\": \"embarrassed\", \"dialogue\": \"抱歉，我试试能不能把你弄出来……嗝！\", \"ask\": null}"
+    },
+    {
+      "role": "user",
+      "content": "P hp=100/100 alive=True pos=(-73,185,-327) stomach=True mouth=False held=False
+G name=AINameData state=IDLE dist=193 pred= hunger=0.0 horny=97.6 stom=23.4 burp=0.0 mouthObj=False memSee=False loc=InStomach rel=PROTECTIVE int=0.6 anger=0.0 looking=False
+Player says: 实在不行吃点药帮帮我如何
+"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 700
+}
+[代理] 正在将请求转发至云端大模型...
+[返回给 Mod 的动作 JSON]:
+{"action": "pat_stomach", "emotion": "embarrassed", "dialogue": "我……我没有药，而且你在我胃里我没办法直接让你出来。你先忍耐一下，我会想办法的。", "ask": null}
+[HTTP] "POST /v1/chat/completions HTTP/1.0" 200 -
