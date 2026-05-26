@@ -228,7 +228,7 @@ namespace GiantessLLMMod
             _executor.Execute(new LLMActionResponse
             {
                 Action = action,
-                Emotion = "neutral",
+                Emotion = null,
                 Dialogue = null,
                 Ask = null
             });

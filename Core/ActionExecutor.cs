@@ -34,8 +34,12 @@ namespace GiantessLLMMod.Core
         private Type _soundLoudnessType;
         private Type _activityConfigType;
         private Type _scriptObjRefType;
+        private Type _scriptObjectTypeEnum;
         private Type _fpsType;
+        private Type _digestableObjectType;
+        private Type _gameEntityType;
         private Type _movementType;
+        private Type _movementComponentType;
         private bool _cacheDone = false;
 
         public string LastExecutionLog { get; private set; } = "";
@@ -59,12 +63,16 @@ namespace GiantessLLMMod.Core
             _soundLoudnessType = FindType("SoundLoudness");
             _activityConfigType = FindType("CActivityCommonConfig");
             _scriptObjRefType = FindType("ScriptObjectReference");
+            _scriptObjectTypeEnum = FindNestedType(_scriptObjRefType, "ScriptObjectType");
             _fpsType = FindType("FPSBehaviour");
+            _digestableObjectType = FindType("DigestableObject");
+            _gameEntityType = FindType("GameEntity");
             _movementType = FindType("GiantessMovementType");
+            _movementComponentType = FindType("GiantessMovement");
 
             _cacheDone = true;
             _log.LogInfo($"ActionExecutor cache: EyesFlex={_eyesFlexType != null}, MouthFlex={_mouthFlexType != null}, " +
-                $"SoundLoudness={_soundLoudnessType != null}");
+                $"SoundLoudness={_soundLoudnessType != null}, DigestableObject={_digestableObjectType != null}, GameEntity={_gameEntityType != null}, Movement={_movementComponentType != null}");
         }
 
         /// <summary>
@@ -95,6 +103,7 @@ namespace GiantessLLMMod.Core
             // 2. Execute action
             if (!string.IsNullOrEmpty(response.Action) && response.Action != "idle")
             {
+                PrepareForQueuedAction(ai, response.Action);
                 ExecuteAction(ai, response.Action);
                 logParts.Add($"Action: {response.Action}");
             }
@@ -140,38 +149,27 @@ namespace GiantessLLMMod.Core
                     return;
                 }
 
-                // Method: qGts_SetFaceFlex(Action OnDone, CActivityCommonConfig pConfig,
-                //         EyesFlexType, MouthFlexType, Boolean isMouthOpen, Boolean isMouthAlwaysOpen, Boolean enableRandomSwallow)
+                // Prefer the emotion component directly. qGts_SetFaceFlex is itself an
+                // activity and can block/queue ahead of the real action being tested.
+                var emotionComp = _collector.GetAISubComponent(ai, "emotion");
+                if (emotionComp != null)
+                {
+                    bool eyeOk = TryInvokeByName(emotionComp, "SetEyesFlex", eyesVal, 0.25f)
+                        || TryInvokeByName(emotionComp, "SetEyesFlex", eyesVal, 0.25f, true);
+                    bool mouthOk = TryInvokeByName(emotionComp, "SetMouthFlex", mouthVal, 0.25f)
+                        || TryInvokeByName(emotionComp, "SetMouthFlex", mouthVal, 0.25f, true);
+
+                    if (!eyeOk) SetField(emotionComp, "m_EyesFlexType", eyesVal);
+                    if (!mouthOk) SetField(emotionComp, "m_MouthFlexType", mouthVal);
+
+                    _log.LogInfo($"Set emotion via GiantessEmotion: {mapping.Eyes}, {mapping.Mouth}");
+                    return;
+                }
+
+                // Last fallback: queue the face-flex activity if the direct component is unavailable.
                 var activity = _collector.GetAISubComponent(ai, "activity");
-                bool success = TryInvokeByName(activity, "qGts_SetFaceFlex",
-                    null,       // Action OnDone
-                    null,       // CActivityCommonConfig pConfig
-                    eyesVal,    // EyesFlexType
-                    mouthVal,   // MouthFlexType
-                    false,      // bIsMouthOpen
-                    false,      // bIsMouthAlwaysOpen
-                    false       // bEnableRandomSwallow
-                );
-
-                if (!success)
-                {
-                    // Fallback: set fields directly on GiantessEmotion
-                    var emotionComp = _collector.GetAISubComponent(ai, "emotion");
-                    if (emotionComp != null)
-                    {
-                        bool eyeOk = TryInvokeByName(emotionComp, "SetEyesFlex", eyesVal, 0.25f, true);
-                        bool mouthOk = TryInvokeByName(emotionComp, "SetMouthFlex", mouthVal, 0.25f, true);
-
-                        if (!eyeOk) SetField(emotionComp, "m_EyesFlexType", eyesVal);
-                        if (!mouthOk) SetField(emotionComp, "m_MouthFlexType", mouthVal);
-
-                        _log.LogInfo($"Set emotion via GiantessEmotion: {mapping.Eyes}, {mapping.Mouth}");
-                    }
-                }
-                else
-                {
+                if (TryInvokeByName(activity, "qGts_SetFaceFlex", null, null, eyesVal, mouthVal, false, false, false))
                     _log.LogInfo($"Set emotion via qGts_SetFaceFlex: {mapping.Eyes}, {mapping.Mouth}");
-                }
             }
             catch (Exception ex)
             {
@@ -502,6 +500,54 @@ namespace GiantessLLMMod.Core
             );
         }
 
+        private void PrepareForQueuedAction(MonoBehaviour ai, string action)
+        {
+            if (ai == null) return;
+
+            string state = GetAIStateString(ai);
+            if (!string.IsNullOrEmpty(state))
+                _log.LogInfo($"Preparing action '{action}' while AI state is {state}");
+
+            // Per the game behavior notes, qGts activities can conflict with movement
+            // queue/custom movement actions left by scripted states.
+            var movement = GetMovementComponent(ai);
+            if (movement == null) return;
+
+            TryInvokeByName(movement, "QueueClear");
+            TryInvokeByName(movement, "CustomAct_StopAll");
+        }
+
+        private string GetAIStateString(MonoBehaviour ai)
+        {
+            try
+            {
+                var fi = ai.GetType().GetField("m_State",
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                return fi?.GetValue(ai)?.ToString();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private object GetMovementComponent(MonoBehaviour ai)
+        {
+            try
+            {
+                var fi = ai.GetType().GetField("m_Movement",
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                var movement = fi?.GetValue(ai);
+                if (movement != null) return movement;
+
+                return _movementComponentType != null ? ai.GetComponent(_movementComponentType) : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         private bool TryPickUpTarget(object activity, object playerTarget)
         {
             if (playerTarget == null)
@@ -512,13 +558,94 @@ namespace GiantessLLMMod.Core
 
             // The older qGts_PickUp has no explicit target and can enqueue an invalid activity
             // when called from outside the game's own script context. Prefer target-aware APIs.
-            if (TryInvokeWithSmartDefaults(activity, "qGts_PickUp_New2", playerTarget))
+            if (TryInvokePickUpNew(activity, "qGts_PickUp_New2", playerTarget))
                 return true;
 
-            if (TryInvokeWithSmartDefaults(activity, "qGts_PickUp_New", playerTarget))
+            if (TryInvokePickUpNew(activity, "qGts_PickUp_New", playerTarget))
                 return true;
 
             return TryInvokeWithSmartDefaults(activity, "qGts_PickUpTargetOverTable", playerTarget);
+        }
+
+        private bool TryInvokePickUpNew(object activity, string methodName, object playerTarget)
+        {
+            if (activity == null || playerTarget == null) return false;
+
+            object hand = ParseEnum(FindType("EHandType"), "Right") ?? FirstEnumValue(FindType("EHandType"));
+            object ikModifier = ParseEnum(FindType("AvatarIKGoalModifier"), "Grab")
+                ?? ParseEnum(FindType("AvatarIKGoalModifier"), "Normal")
+                ?? FirstEnumValue(FindType("AvatarIKGoalModifier"));
+            object relationship = ParseEnum(FindType("GiantessRelationshipComparison"), "DOESNT_MATTER")
+                ?? FirstEnumValue(FindType("GiantessRelationshipComparison"));
+            object upsideDown = ParseEnum(FindType("EUpsideDownModifier"), "Never")
+                ?? FirstEnumValue(FindType("EUpsideDownModifier"));
+            object endState = ParseEnum(FindType("EPickUpTargetIntendedActivityType"), "HoldInFrontOfFace")
+                ?? FirstEnumValue(FindType("EPickUpTargetIntendedActivityType"));
+
+            if (methodName == "qGts_PickUp_New2")
+            {
+                return TryInvokeByName(activity, methodName,
+                    playerTarget,        // Target
+                    null,                // OnPickUpSuccess
+                    null,                // OnPickUpFailed
+                    null,                // OnObjectStolenFromUs
+                    null,                // OnObjectMistaken
+                    hand,
+                    ikModifier,
+                    relationship,
+                    1.0f,                // fGrabDuration
+                    0.25f,               // fIKTransitionDuration
+                    1.0f,                // fEatSpeed
+                    false,               // bMustBeAbleToSee
+                    true,                // bAllowChase
+                    true,                // bAllowPickUpSubsitution
+                    true,                // bAllowBendDown
+                    false,               // bAllowSquat
+                    false,               // bAllowImmediatelyEat
+                    false,               // bAllowSwallow
+                    true,                // bAllowInterruptions
+                    true,                // bHandFollowsTarget
+                    false,               // bAllowDesiredEndStateChange
+                    false,               // bAllowDriveBy
+                    upsideDown,
+                    null,                // fGetIsMistaken
+                    endState,
+                    null,                // ApplyDesiredEndState
+                    null,                // BuildHelperInstSet
+                    null                 // pConfig
+                );
+            }
+
+            return TryInvokeByName(activity, methodName,
+                playerTarget,
+                null,
+                null,
+                null,
+                null,
+                hand,
+                ikModifier,
+                relationship,
+                1.0f,
+                0.25f,
+                1.0f,
+                false,
+                true,
+                true,
+                true,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false,
+                false,
+                upsideDown,
+                null,
+                endState,
+                null,
+                null,
+                null
+            );
         }
 
         /// <summary>
@@ -673,26 +800,95 @@ namespace GiantessLLMMod.Core
 
             try
             {
+                GameObject playerObj = null;
+
                 if (_fpsType != null)
                 {
                     var fps = UnityEngine.Object.FindObjectOfType(_fpsType);
                     if (fps != null)
                     {
-                        var ctor = _scriptObjRefType.GetConstructor(new[] { _fpsType });
-                        if (ctor != null) return ctor.Invoke(new object[] { fps });
+                        var fpsComp = fps as Component;
+                        playerObj = fpsComp != null ? fpsComp.gameObject : null;
+
+                        var digestRef = TryCreateDigestablePlayerReference(playerObj, fps);
+                        if (digestRef != null) return digestRef;
                     }
                 }
 
-                GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+                if (playerObj == null)
+                    playerObj = GameObject.FindGameObjectWithTag("Player");
+
                 if (playerObj != null)
                 {
+                    var digestRef = TryCreateDigestablePlayerReference(playerObj, null);
+                    if (digestRef != null) return digestRef;
+
                     var ctor = _scriptObjRefType.GetConstructor(new[] { typeof(GameObject) });
                     if (ctor != null) return ctor.Invoke(new object[] { playerObj });
+                }
+
+                if (_scriptObjectTypeEnum != null)
+                {
+                    object playerType = ParseEnum(_scriptObjectTypeEnum, "PLAYER");
+                    var ctor = _scriptObjRefType.GetConstructor(new[] { _scriptObjectTypeEnum });
+                    if (playerType != null && ctor != null) return ctor.Invoke(new[] { playerType });
                 }
             }
             catch (Exception ex)
             {
                 _log.LogWarning($"Failed to create player ScriptObjectReference: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        private object TryCreateDigestablePlayerReference(GameObject playerObj, object fps)
+        {
+            if (_digestableObjectType == null || _gameEntityType == null || playerObj == null)
+                return null;
+
+            Component digest = null;
+            try
+            {
+                digest = playerObj.GetComponent(_digestableObjectType);
+
+                if (digest == null && fps != null)
+                {
+                    var allDigestables = UnityEngine.Object.FindObjectsOfType(_digestableObjectType);
+                    foreach (var obj in allDigestables)
+                    {
+                        var comp = obj as Component;
+                        if (comp == null) continue;
+
+                        var fi = _digestableObjectType.GetField("m_FPSBehaviour",
+                            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                        if (fi != null && ReferenceEquals(fi.GetValue(comp), fps))
+                        {
+                            digest = comp;
+                            break;
+                        }
+                    }
+                }
+
+                if (digest == null)
+                    return null;
+
+                object entity = Activator.CreateInstance(_gameEntityType);
+                var setHandle = _gameEntityType.GetMethod("SetHandle",
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                setHandle?.Invoke(entity, new object[] { digest });
+
+                var ctor = _scriptObjRefType.GetConstructor(new[] { _gameEntityType });
+                if (ctor != null)
+                {
+                    _log.LogInfo("Created player ScriptObjectReference via DigestableObject/GameEntity");
+                    return ctor.Invoke(new[] { entity });
+                }
+            }
+            catch (Exception ex)
+            {
+                if (_config.DebugLogging.Value)
+                    _log.LogWarning($"Digestable player reference failed: {ex.Message}");
             }
 
             return null;
@@ -704,6 +900,13 @@ namespace GiantessLLMMod.Core
         {
             if (_asm == null) return null;
             return _asm.GetTypes().FirstOrDefault(t => t.Name == name);
+        }
+
+        private Type FindNestedType(Type type, string name)
+        {
+            if (type == null) return null;
+            return type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic)
+                .FirstOrDefault(t => t.Name == name);
         }
 
         private object ParseEnum(Type enumType, string valueName)
