@@ -33,6 +33,10 @@ namespace GiantessLLMMod.Core
         public ConfigEntry<bool> EnableNativeDialogue;
         public ConfigEntry<int> DialogueTimeout;
         public ConfigEntry<bool> DryRunMode;
+        public ConfigEntry<bool> PreventActionConflicts;
+        public ConfigEntry<bool> ForceInterruptBusyActions;
+        public ConfigEntry<string> ActionConflictPolicy;
+        public ConfigEntry<bool> AllowActionsDuringScriptedState;
 
         // ─── Keys ───
         public ConfigEntry<KeyCode> ToggleUIKey;
@@ -109,6 +113,22 @@ namespace GiantessLLMMod.Core
             DryRunMode = config.Bind("Behavior", "DryRunMode",
                 false,
                 "If true, don't actually call LLM — use hardcoded test responses");
+
+            PreventActionConflicts = config.Bind("Behavior", "PreventActionConflicts",
+                true,
+                "If true, validate LLM actions before enqueueing them into the game's native activity interface.");
+
+            ForceInterruptBusyActions = config.Bind("Behavior", "ForceInterruptBusyActions",
+                false,
+                "If true, clear the giantess' current native action queues when busy, then execute the latest LLM action.");
+
+            ActionConflictPolicy = config.Bind("Behavior", "ActionConflictPolicy",
+                "SkipWhenBusy",
+                "Fallback behavior when ForceInterruptBusyActions is false and the native activity queue is busy. Supported values: SkipWhenBusy, ClearCurrentQueue, ClearAllQueues, Append.");
+
+            AllowActionsDuringScriptedState = config.Bind("Behavior", "AllowActionsDuringScriptedState",
+                true,
+                "Allow actions while the AI is in GTSSCRIPT/EXEC_SCRIPT. Busy native queues are still handled by ActionConflictPolicy.");
 
             // Keys
             ToggleUIKey = config.Bind("Keys", "ToggleUI",

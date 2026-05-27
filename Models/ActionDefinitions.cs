@@ -46,6 +46,7 @@ namespace GiantessLLMMod.Models
             { "play_with_food",   "Play with the player as food (qGts_PlayWithFood)" },
             { "lay_down",         "Lay down face up (qGts_LayDownFace_Start)" },
             { "stand_up",         "Stand back up (qGts_LayDownFace_End)" },
+            { "place_on_surface", "Pick up the player if needed, move to a named scene surface, and place the player there" },
         };
 
         /// <summary>

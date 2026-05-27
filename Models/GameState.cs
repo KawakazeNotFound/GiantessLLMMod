@@ -17,6 +17,9 @@ namespace GiantessLLMMod.Models
         [JsonProperty("giantesses")]
         public List<GiantessState> Giantesses = new List<GiantessState>();
 
+        [JsonProperty("scene_objects")]
+        public List<SceneObjectCandidate> SceneObjects = new List<SceneObjectCandidate>();
+
         [JsonProperty("player_input")]
         public string PlayerInput;
 
@@ -98,5 +101,20 @@ namespace GiantessLLMMod.Models
         [JsonProperty("is_standing_on_us")] public bool IsStandingOnUs;
         [JsonProperty("is_looking_at_us")] public bool IsLookingAtUs;
         [JsonProperty("time_in_location")] public float TimeSpentInCurrentLocation;
+    }
+
+    public class SceneObjectCandidate
+    {
+        [JsonProperty("id")] public string Id;
+        [JsonProperty("name")] public string Name;
+        [JsonProperty("kind")] public string Kind;
+        [JsonProperty("x")] public float X;
+        [JsonProperty("y")] public float Y;
+        [JsonProperty("z")] public float Z;
+        [JsonProperty("top_y")] public float TopY;
+        [JsonProperty("width")] public float Width;
+        [JsonProperty("depth")] public float Depth;
+        [JsonProperty("height")] public float Height;
+        [JsonProperty("distance_to_player")] public float DistanceToPlayer;
     }
 }

@@ -26,7 +26,7 @@ namespace GiantessLLMMod.UI
         // Config temp values
         private string _cfgApiUrl, _cfgApiKey, _cfgModel;
         private string _testActionInput = "face_player";
-        private bool _cfgTimedTrigger, _cfgEventTrigger, _cfgDebug, _cfgNativeDialogue, _cfgDryRun;
+        private bool _cfgTimedTrigger, _cfgEventTrigger, _cfgDebug, _cfgNativeDialogue, _cfgDryRun, _cfgForceInterruptBusyActions;
         private float _cfgTimedTriggerInterval, _cfgEventTriggerCooldown;
 
         // Log
@@ -238,6 +238,13 @@ namespace GiantessLLMMod.UI
             GUILayout.EndHorizontal();
             _cfgNativeDialogue = GUILayout.Toggle(_cfgNativeDialogue, "Use native dialogue (Say/Ask)");
             _cfgDryRun = GUILayout.Toggle(_cfgDryRun, "Dry-run mode (no LLM calls)");
+            bool forceInterrupt = GUILayout.Toggle(_cfgForceInterruptBusyActions, "Force interrupt busy actions");
+            if (forceInterrupt != _cfgForceInterruptBusyActions)
+            {
+                _cfgForceInterruptBusyActions = forceInterrupt;
+                _config.ForceInterruptBusyActions.Value = forceInterrupt;
+                AddLog($"Force interrupt busy actions: {(forceInterrupt ? "ON" : "OFF")}");
+            }
             _cfgDebug = GUILayout.Toggle(_cfgDebug, "Debug logging");
 
             GUILayout.Space(5);
@@ -254,15 +261,16 @@ namespace GiantessLLMMod.UI
             GUILayout.Space(5);
             if (GUILayout.Button("Apply Settings"))
             {
-                _config.ApiBaseUrl.Value = _cfgApiUrl;
-                _config.ApiKey.Value = _cfgApiKey;
-                _config.ModelName.Value = _cfgModel;
+                _config.ApiBaseUrl.Value = _cfgApiUrl?.Trim();
+                _config.ApiKey.Value = _cfgApiKey?.Trim();
+                _config.ModelName.Value = _cfgModel?.Trim();
                 _config.TimedTriggerEnabled.Value = _cfgTimedTrigger;
                 _config.TimedTriggerInterval.Value = Mathf.Clamp(_cfgTimedTriggerInterval, 5f, 120f);
                 _config.EventTriggerEnabled.Value = _cfgEventTrigger;
                 _config.EventTriggerCooldown.Value = Mathf.Clamp(_cfgEventTriggerCooldown, 5f, 300f);
                 _config.EnableNativeDialogue.Value = _cfgNativeDialogue;
                 _config.DryRunMode.Value = _cfgDryRun;
+                _config.ForceInterruptBusyActions.Value = _cfgForceInterruptBusyActions;
                 _config.DebugLogging.Value = _cfgDebug;
                 AddLog("Settings applied.");
             }
@@ -302,6 +310,7 @@ namespace GiantessLLMMod.UI
             _cfgDebug = _config.DebugLogging.Value;
             _cfgNativeDialogue = _config.EnableNativeDialogue.Value;
             _cfgDryRun = _config.DryRunMode.Value;
+            _cfgForceInterruptBusyActions = _config.ForceInterruptBusyActions.Value;
         }
 
         private void InitStyles()

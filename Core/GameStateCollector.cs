@@ -184,6 +184,7 @@ namespace GiantessLLMMod.Core
 
             // Collect all giantess data
             snapshot.Giantesses = CollectGiantessStates(snapshot.Player);
+            snapshot.SceneObjects = CollectSceneObjectCandidates(snapshot.Player);
 
             return snapshot;
         }
@@ -473,6 +474,107 @@ namespace GiantessLLMMod.Core
                 Acid = gs.StomachAcid,
                 Burp = gs.BurpBuildUp
             };
+        }
+
+        private List<SceneObjectCandidate> CollectSceneObjectCandidates(PlayerState player)
+        {
+            var candidates = new List<SceneObjectCandidate>();
+
+            try
+            {
+                var playerPos = new Vector3(player.X, player.Y, player.Z);
+                var seen = new HashSet<int>();
+                foreach (var col in UnityEngine.Object.FindObjectsOfType<Collider>())
+                {
+                    if (col == null || !col.enabled || col.isTrigger)
+                        continue;
+
+                    var go = col.gameObject;
+                    if (go == null || !go.activeInHierarchy)
+                        continue;
+
+                    if (go.GetComponentInParent(_giantessAIType) != null || go.GetComponentInParent(_fpsType) != null)
+                        continue;
+
+                    string name = GetHierarchyName(go);
+                    string kind = ClassifySceneObject(name);
+                    if (kind == null)
+                        continue;
+
+                    Bounds b = col.bounds;
+                    if (b.size.x < 0.5f || b.size.z < 0.5f || b.size.y < 0.03f)
+                        continue;
+
+                    int rootId = go.transform.root.gameObject.GetInstanceID();
+                    int idKey = rootId ^ kind.GetHashCode();
+                    if (!seen.Add(idKey))
+                        continue;
+
+                    candidates.Add(new SceneObjectCandidate
+                    {
+                        Id = $"{kind}:{rootId}",
+                        Name = name,
+                        Kind = kind,
+                        X = b.center.x,
+                        Y = b.center.y,
+                        Z = b.center.z,
+                        TopY = b.max.y,
+                        Width = b.size.x,
+                        Depth = b.size.z,
+                        Height = b.size.y,
+                        DistanceToPlayer = Vector3.Distance(playerPos, b.center)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning($"Error collecting scene objects: {ex.Message}");
+            }
+
+            return candidates
+                .OrderBy(c => c.Kind == "table" || c.Kind == "desk" ? 0 : 1)
+                .ThenBy(c => c.DistanceToPlayer)
+                .Take(16)
+                .ToList();
+        }
+
+        private string GetHierarchyName(GameObject go)
+        {
+            try
+            {
+                var names = new List<string>();
+                Transform t = go.transform;
+                int limit = 0;
+                while (t != null && limit++ < 4)
+                {
+                    names.Add(t.name);
+                    t = t.parent;
+                }
+                return string.Join("/", names.ToArray());
+            }
+            catch
+            {
+                return go != null ? go.name : "";
+            }
+        }
+
+        private string ClassifySceneObject(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return null;
+            string n = name.ToLowerInvariant();
+
+            if (n.Contains("table") || n.Contains("desk") || n.Contains("桌"))
+                return n.Contains("desk") ? "desk" : "table";
+            if (n.Contains("counter") || n.Contains("bench"))
+                return "counter";
+            if (n.Contains("shelf") || n.Contains("cabinet"))
+                return "shelf";
+            if (n.Contains("bed"))
+                return "bed";
+            if (n.Contains("floor") || n.Contains("ground"))
+                return "floor";
+
+            return null;
         }
 
         private PlayerMemoryData CollectPlayerMemory(MonoBehaviour ai)

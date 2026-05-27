@@ -106,10 +106,21 @@ namespace GiantessLLMMod.Core
                         };
 
                         string requestJson = JsonConvert.SerializeObject(request);
+                        string apiBaseUrl = _config.ApiBaseUrl.Value.Trim().TrimEnd('/');
+                        string apiKey = NormalizeApiKey(_config.ApiKey.Value);
+
+                        if (_config.DebugLogging.Value)
+                        {
+                            string keyStatus = string.IsNullOrEmpty(apiKey)
+                                ? "missing"
+                                : $"present len={apiKey.Length}";
+                            _log.LogInfo($"LLM request target={apiBaseUrl}/chat/completions model={_config.ModelName.Value} apiKey={keyStatus}");
+                        }
+
                         string responseJson = DoHttpPost(
-                            _config.ApiBaseUrl.Value.TrimEnd('/') + "/chat/completions",
+                            apiBaseUrl + "/chat/completions",
                             requestJson,
-                            _config.ApiKey.Value,
+                            apiKey,
                             30000 // 30s timeout
                         );
 
@@ -173,6 +184,17 @@ namespace GiantessLLMMod.Core
                         onSuccess?.Invoke(actionResponse);
                     });
                 }
+                catch (WebException ex)
+                {
+                    string detail = ReadWebExceptionDetail(ex);
+                    _log.LogError($"LLM request failed: {detail}");
+
+                    EnqueueMainThread(() =>
+                    {
+                        _isBusy = false;
+                        onError?.Invoke(detail);
+                    });
+                }
                 catch (Exception ex)
                 {
                     _log.LogError($"LLM request failed: {ex.Message}");
@@ -184,6 +206,45 @@ namespace GiantessLLMMod.Core
                     });
                 }
             });
+        }
+
+        private string ReadWebExceptionDetail(WebException ex)
+        {
+            var response = ex.Response as HttpWebResponse;
+            if (response == null)
+                return ex.Message;
+
+            string responseBody = "";
+            try
+            {
+                using (var stream = response.GetResponseStream())
+                using (var reader = new StreamReader(stream, Encoding.UTF8))
+                {
+                    responseBody = reader.ReadToEnd();
+                }
+            }
+            catch
+            {
+                // Preserve the status line if the response body cannot be read.
+            }
+
+            string status = $"{(int)response.StatusCode} {response.StatusDescription}";
+            return string.IsNullOrWhiteSpace(responseBody)
+                ? $"HTTP {status}: {ex.Message}"
+                : $"HTTP {status}: {responseBody}";
+        }
+
+        private string NormalizeApiKey(string apiKey)
+        {
+            if (string.IsNullOrWhiteSpace(apiKey))
+                return "";
+
+            string normalized = apiKey.Trim().Trim('"', '\'');
+            const string bearerPrefix = "Bearer ";
+            if (normalized.StartsWith(bearerPrefix, StringComparison.OrdinalIgnoreCase))
+                normalized = normalized.Substring(bearerPrefix.Length).Trim();
+
+            return normalized;
         }
 
         /// <summary>
@@ -347,6 +408,16 @@ namespace GiantessLLMMod.Core
             if (state.RecentEvents != null && state.RecentEvents.Count > 0)
             {
                 sb.AppendLine("Events: " + string.Join(" | ", state.RecentEvents));
+            }
+
+            if (state.SceneObjects != null && state.SceneObjects.Count > 0)
+            {
+                sb.AppendLine("Scene object candidates:");
+                foreach (var obj in state.SceneObjects)
+                {
+                    sb.AppendLine(
+                        $"- id={obj.Id} kind={obj.Kind} name={obj.Name} pos=({obj.X:F0},{obj.Y:F0},{obj.Z:F0}) topY={obj.TopY:F1} size=({obj.Width:F1},{obj.Depth:F1}) dist={obj.DistanceToPlayer:F0}");
+                }
             }
 
             // Player input

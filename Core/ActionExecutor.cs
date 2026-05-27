@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Linq;
 using System.Reflection;
 using BepInEx.Logging;
@@ -103,9 +104,21 @@ namespace GiantessLLMMod.Core
             // 2. Execute action
             if (!string.IsNullOrEmpty(response.Action) && response.Action != "idle")
             {
-                PrepareForQueuedAction(ai, response.Action);
-                ExecuteAction(ai, response.Action);
-                logParts.Add($"Action: {response.Action}");
+                var gate = EvaluateActionGate(ai, response.Action);
+                if (!gate.Allow)
+                {
+                    _log.LogWarning($"Skipped action '{response.Action}': {gate.Reason}");
+                    logParts.Add($"Action skipped: {response.Action} ({gate.Reason})");
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(gate.Reason) && _config.DebugLogging.Value)
+                        _log.LogInfo($"Action gate for '{response.Action}': {gate.Reason}");
+
+                    PrepareForQueuedAction(ai, response.Action);
+                    ExecuteAction(ai, response);
+                    logParts.Add($"Action: {response.Action}");
+                }
             }
 
             // 3. Handle dialogue via Say()
@@ -179,8 +192,9 @@ namespace GiantessLLMMod.Core
 
         // ──────────────────── Actions ────────────────────
 
-        private void ExecuteAction(MonoBehaviour ai, string action)
+        private void ExecuteAction(MonoBehaviour ai, LLMActionResponse response)
         {
+            string action = response?.Action;
             try
             {
                 var activity = _collector.GetAISubComponent(ai, "activity");
@@ -278,6 +292,10 @@ namespace GiantessLLMMod.Core
 
                     case "stand_up":
                         TryInvokeWithNullCallbacks(activity, "qGts_LayDownFace_End");
+                        break;
+
+                    case "place_on_surface":
+                        TryPlacePlayerOnSurface(ai, activity, response);
                         break;
 
                     case "look_around":
@@ -500,6 +518,179 @@ namespace GiantessLLMMod.Core
             );
         }
 
+        private bool TryPlacePlayerOnSurface(MonoBehaviour ai, object activity, LLMActionResponse response)
+        {
+            string hint = GetParameterString(response, "target_id")
+                ?? GetParameterString(response, "target")
+                ?? GetParameterString(response, "target_hint")
+                ?? GetParameterString(response, "surface")
+                ?? "table";
+
+            var target = FindSurfaceTarget(hint, ai);
+            if (target == null)
+            {
+                _log.LogWarning($"place_on_surface rejected: no surface matched '{hint}'");
+                LastExecutionLog = $"Rejected: no surface matched '{hint}'";
+                return false;
+            }
+
+            object playerTarget = CreatePlayerReference();
+            object surfaceRef = CreateSurfaceReference(target.DropPoint, target.Name);
+            if (surfaceRef == null)
+            {
+                _log.LogWarning($"place_on_surface rejected: failed to create reference for '{target.Name}'");
+                return false;
+            }
+
+            bool hasHeldObject = GetMemberValue(activity, "heldObject") != null
+                || GetMemberValue(activity, "heldObjectLeftHand") != null;
+
+            if (!hasHeldObject)
+                TryPickUpTarget(activity, playerTarget);
+
+            TryGotoTarget(activity, surfaceRef);
+
+            object hand = ParseEnum(FindType("EHandType"), "Right") ?? FirstEnumValue(FindType("EHandType"));
+            bool dropOk = TryInvokeByName(activity, "qGts_Drop",
+                null,       // OnDropped
+                true,       // bAllowExpressionChanges
+                null,       // pConfig
+                surfaceRef, // pDropPoint
+                true,       // bAllowBendDown
+                hand);
+
+            if (!dropOk)
+                dropOk = TryInvokeWithNullCallbacks(activity, "qGts_Drop");
+
+            _log.LogInfo($"place_on_surface plan queued: target={target.Name}, hint={hint}, dropOk={dropOk}");
+            return dropOk;
+        }
+
+        private string GetParameterString(LLMActionResponse response, string key)
+        {
+            if (response?.Parameters == null || !response.Parameters.TryGetValue(key, out var value) || value == null)
+                return null;
+
+            return value.ToString();
+        }
+
+        private SurfaceTarget FindSurfaceTarget(string hint, MonoBehaviour ai)
+        {
+            string normalizedHint = NormalizeTargetText(hint);
+            var player = _collector.CollectState()?.Player;
+            var playerPos = player != null
+                ? new Vector3(player.X, player.Y, player.Z)
+                : ai.transform.position;
+
+            SurfaceTarget best = null;
+            float bestScore = float.MinValue;
+
+            foreach (var col in UnityEngine.Object.FindObjectsOfType<Collider>())
+            {
+                if (col == null || !col.enabled || col.isTrigger || !col.gameObject.activeInHierarchy)
+                    continue;
+
+                Type giantessType = _collector.GetGiantessAIType();
+                if ((giantessType != null && col.GetComponentInParent(giantessType) != null)
+                    || (_fpsType != null && col.GetComponentInParent(_fpsType) != null))
+                    continue;
+
+                Bounds b = col.bounds;
+                if (b.size.x < 0.5f || b.size.z < 0.5f || b.size.y < 0.03f)
+                    continue;
+
+                string name = GetHierarchyName(col.gameObject);
+                string normalizedName = NormalizeTargetText(name);
+                string kind = ClassifySurfaceName(normalizedName);
+                if (kind == null)
+                    continue;
+
+                float score = 0f;
+                if (!string.IsNullOrEmpty(normalizedHint))
+                {
+                    if (normalizedName.Contains(normalizedHint)) score += 100f;
+                    if (normalizedHint.Contains(kind)) score += 60f;
+                    if (kind == "table" && (normalizedHint.Contains("桌") || normalizedHint.Contains("desk"))) score += 80f;
+                    if (kind == "desk" && (normalizedHint.Contains("桌") || normalizedHint.Contains("table"))) score += 80f;
+                }
+
+                score += Mathf.Clamp(80f - Vector3.Distance(playerPos, b.center), 0f, 80f);
+                score += Mathf.Clamp(b.size.x * b.size.z, 0f, 50f);
+                if (kind == "table" || kind == "desk") score += 30f;
+
+                if (score <= bestScore)
+                    continue;
+
+                Vector3 drop = new Vector3(b.center.x, b.max.y + 0.15f, b.center.z);
+                bestScore = score;
+                best = new SurfaceTarget
+                {
+                    Name = name,
+                    DropPoint = drop,
+                    Bounds = b
+                };
+            }
+
+            return bestScore > 0f ? best : null;
+        }
+
+        private object CreateSurfaceReference(Vector3 worldPoint, string targetName)
+        {
+            try
+            {
+                var marker = new GameObject("LLM_SurfaceDrop_" + SanitizeName(targetName));
+                marker.transform.position = worldPoint;
+
+                var ctor = _scriptObjRefType?.GetConstructor(new[] { typeof(GameObject) });
+                if (ctor != null)
+                    return ctor.Invoke(new object[] { marker });
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning($"CreateSurfaceReference failed: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        private string GetHierarchyName(GameObject go)
+        {
+            if (go == null) return "";
+            var names = new System.Collections.Generic.List<string>();
+            Transform t = go.transform;
+            int limit = 0;
+            while (t != null && limit++ < 4)
+            {
+                names.Add(t.name);
+                t = t.parent;
+            }
+            return string.Join("/", names.ToArray());
+        }
+
+        private string NormalizeTargetText(string text)
+        {
+            return (text ?? "").Trim().ToLowerInvariant();
+        }
+
+        private string ClassifySurfaceName(string normalizedName)
+        {
+            if (string.IsNullOrEmpty(normalizedName)) return null;
+            if (normalizedName.Contains("table") || normalizedName.Contains("桌")) return "table";
+            if (normalizedName.Contains("desk")) return "desk";
+            if (normalizedName.Contains("counter") || normalizedName.Contains("bench")) return "counter";
+            if (normalizedName.Contains("shelf") || normalizedName.Contains("cabinet")) return "shelf";
+            if (normalizedName.Contains("bed")) return "bed";
+            if (normalizedName.Contains("floor") || normalizedName.Contains("ground")) return "floor";
+            return null;
+        }
+
+        private string SanitizeName(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return "target";
+            var chars = value.Select(ch => char.IsLetterOrDigit(ch) ? ch : '_').Take(40).ToArray();
+            return new string(chars);
+        }
+
         private void PrepareForQueuedAction(MonoBehaviour ai, string action)
         {
             if (ai == null) return;
@@ -515,6 +706,216 @@ namespace GiantessLLMMod.Core
 
             TryInvokeByName(movement, "QueueClear");
             TryInvokeByName(movement, "CustomAct_StopAll");
+        }
+
+        private ActionGateDecision EvaluateActionGate(MonoBehaviour ai, string action)
+        {
+            if (ai == null)
+                return ActionGateDecision.Reject("AI missing");
+
+            if (_config == null || !_config.PreventActionConflicts.Value)
+                return ActionGateDecision.Accept("conflict prevention disabled");
+
+            var activity = _collector.GetAISubComponent(ai, "activity");
+            string state = GetAIStateString(ai);
+
+            if (IsScriptedState(state) && !_config.AllowActionsDuringScriptedState.Value)
+                return ActionGateDecision.Reject($"AI state is {state}");
+
+            string invalidReason = GetInvalidActionReason(ai, activity, action);
+            if (!string.IsNullOrEmpty(invalidReason))
+                return ActionGateDecision.Reject(invalidReason);
+
+            bool queueBusy = IsActivityQueueBusy(activity);
+            bool desiredActionBusy = HasDesiredAction(ai);
+            if (!queueBusy && !desiredActionBusy)
+                return ActionGateDecision.Accept(null);
+
+            string busyReason = queueBusy ? "native activity queue is busy" : "AI desired action is active";
+            if (_config.ForceInterruptBusyActions.Value)
+            {
+                if (TryForceInterruptBusyActions(ai, activity))
+                    return ActionGateDecision.Accept($"{busyReason}; force-interrupted by config");
+
+                return ActionGateDecision.Reject($"{busyReason}; force interrupt failed");
+            }
+
+            string policy = (_config.ActionConflictPolicy.Value ?? "SkipWhenBusy").Trim();
+            switch (policy.ToLowerInvariant())
+            {
+                case "append":
+                    return ActionGateDecision.Accept($"{busyReason}; appending by policy");
+
+                case "clearcurrentqueue":
+                    if (TryInvokeByName(activity, "ClearCurrentQueue"))
+                        return ActionGateDecision.Accept($"{busyReason}; cleared current queue");
+                    return ActionGateDecision.Reject($"{busyReason}; failed to clear current queue");
+
+                case "clearallqueues":
+                    if (TryInvokeByName(activity, "ClearQueue", true, true, true)
+                        || TryInvokeByName(activity, "ClearCurrentQueue"))
+                        return ActionGateDecision.Accept($"{busyReason}; cleared queue");
+                    return ActionGateDecision.Reject($"{busyReason}; failed to clear queue");
+
+                case "skipwhenbusy":
+                default:
+                    return ActionGateDecision.Reject(busyReason);
+            }
+        }
+
+        private string GetInvalidActionReason(MonoBehaviour ai, object activity, string action)
+        {
+            var snapshot = _collector.CollectState();
+            var player = snapshot?.Player;
+
+            bool playerHeld = player?.IsBeingHeld == true;
+            bool playerInMouth = player?.InMouth == true;
+            bool playerInStomach = player?.InStomach == true;
+            bool hasHeldObject = GetMemberValue(activity, "heldObject") != null
+                || GetMemberValue(activity, "heldObjectLeftHand") != null;
+            bool hasObjectInMouth = GetMemberValue(activity, "objectInMouth") != null || playerInMouth;
+
+            switch (action)
+            {
+                case "pick_up":
+                    if (playerInStomach) return "player is already in stomach";
+                    if (playerInMouth) return "player is already in mouth";
+                    if (playerHeld || hasHeldObject) return "target or hand is already held";
+                    break;
+
+                case "place_on_surface":
+                    if (playerInStomach) return "player is in stomach";
+                    if (playerInMouth) return "player is in mouth";
+                    break;
+
+                case "walk_to_player":
+                case "follow_player":
+                case "face_player":
+                case "poke_player":
+                case "hover_foot":
+                case "crawl_begin":
+                case "fly_into_mouth":
+                    if (playerInStomach) return "player is in stomach";
+                    if (playerInMouth) return "player is in mouth";
+                    break;
+
+                case "eat":
+                case "put_in_mouth":
+                case "drop":
+                case "dangle":
+                case "dangle_drop":
+                case "tease_mouth":
+                case "tease_stomach":
+                case "put_on_stomach":
+                case "lick":
+                case "put_in_bra":
+                case "lower_into_mouth":
+                case "random_tease":
+                case "play_with_food":
+                    if (!hasHeldObject && !playerHeld) return "no held object";
+                    break;
+
+                case "swallow":
+                case "take_out_mouth":
+                case "mouth_activity":
+                    if (!hasObjectInMouth) return "no object in mouth";
+                    break;
+
+                case "take_off_stomach":
+                    if (!playerHeld && !playerInStomach) return "player is not on/in stomach";
+                    break;
+
+                case "pat_stomach":
+                case "watch_stomach":
+                    if (!playerInStomach) return "player is not in stomach";
+                    break;
+
+                case "burp":
+                    if (!playerInStomach && GetBurpBuildUp(ai) <= 0.01f)
+                        return "no burp buildup and player is not in stomach";
+                    break;
+            }
+
+            return null;
+        }
+
+        private bool TryForceInterruptBusyActions(MonoBehaviour ai, object activity)
+        {
+            bool clearedActivity = false;
+            if (activity != null)
+            {
+                clearedActivity = TryInvokeByName(activity, "ClearQueue", true, true, true)
+                    || TryInvokeByName(activity, "ClearCurrentQueue")
+                    || TryInvokeByName(activity, "ClearQueue");
+            }
+
+            bool clearedMovement = false;
+            var movement = GetMovementComponent(ai);
+            if (movement != null)
+            {
+                bool queueClear = TryInvokeByName(movement, "QueueClear");
+                bool customStop = TryInvokeByName(movement, "CustomAct_StopAll");
+                clearedMovement = queueClear || customStop;
+            }
+
+            return clearedActivity || clearedMovement;
+        }
+
+        private bool IsScriptedState(string state)
+        {
+            return string.Equals(state, "GTSSCRIPT", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state, "EXEC_SCRIPT", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsActivityQueueBusy(object activity)
+        {
+            if (activity == null) return false;
+
+            var runningAny = GetMemberValue(activity, "IsRunningCodeOnAnySubFrame");
+            if (runningAny is bool running && running)
+                return true;
+
+            var subframes = GetMemberValue(activity, "m_SubFrameList") as IEnumerable;
+            if (subframes != null)
+            {
+                foreach (var subframe in subframes)
+                {
+                    if (subframe == null) continue;
+
+                    int count = GetCollectionCount(GetMemberValue(subframe, "ActivityQueue"));
+                    bool isDone = GetBoolMember(subframe, "IsDone", count == 0);
+                    if (count > 0 && !isDone)
+                        return true;
+                }
+
+                return false;
+            }
+
+            return GetCollectionCount(GetMemberValue(activity, "queue")) > 0;
+        }
+
+        private bool HasDesiredAction(MonoBehaviour ai)
+        {
+            object desired = InvokeNoArg(ai, "GetDesiredAction");
+            object actionType = GetMemberValue(desired, "type");
+            if (actionType == null) return false;
+
+            string value = actionType.ToString();
+            return !string.IsNullOrEmpty(value)
+                && !string.Equals(value, "Nothing", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private float GetBurpBuildUp(MonoBehaviour ai)
+        {
+            object stomach = _collector.GetAISubComponent(ai, "stomach");
+            object value = GetMemberValue(stomach, "m_BurpBuildUp");
+            if (value is float f) return f;
+            if (value is IConvertible)
+            {
+                try { return Convert.ToSingle(value); }
+                catch { return 0f; }
+            }
+            return 0f;
         }
 
         private string GetAIStateString(MonoBehaviour ai)
@@ -699,6 +1100,75 @@ namespace GiantessLLMMod.Core
             }
 
             return false;
+        }
+
+        private object InvokeNoArg(object obj, string methodName)
+        {
+            if (obj == null) return null;
+
+            try
+            {
+                var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+                var method = obj.GetType().GetMethods(flags)
+                    .FirstOrDefault(m => m.Name == methodName && m.GetParameters().Length == 0);
+                return method?.Invoke(obj, null);
+            }
+            catch (Exception ex)
+            {
+                if (_config.DebugLogging.Value)
+                    _log.LogWarning($"InvokeNoArg {methodName} failed: {ex.InnerException?.Message ?? ex.Message}");
+                return null;
+            }
+        }
+
+        private object GetMemberValue(object obj, string name)
+        {
+            if (obj == null || string.IsNullOrEmpty(name)) return null;
+
+            try
+            {
+                var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+                var type = obj.GetType();
+
+                var prop = type.GetProperty(name, flags);
+                if (prop != null)
+                    return prop.GetValue(obj, null);
+
+                var field = type.GetField(name, flags);
+                if (field != null)
+                    return field.GetValue(obj);
+            }
+            catch (Exception ex)
+            {
+                if (_config.DebugLogging.Value)
+                    _log.LogWarning($"GetMemberValue {name} failed: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        private bool GetBoolMember(object obj, string name, bool defaultValue)
+        {
+            object value = GetMemberValue(obj, name);
+            if (value is bool b) return b;
+            return defaultValue;
+        }
+
+        private int GetCollectionCount(object collection)
+        {
+            if (collection == null) return 0;
+            if (collection is ICollection nonGeneric) return nonGeneric.Count;
+
+            try
+            {
+                var prop = collection.GetType().GetProperty("Count",
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                object value = prop?.GetValue(collection, null);
+                if (value is int count) return count;
+            }
+            catch { }
+
+            return 0;
         }
 
         private bool TryInvokeWithSmartDefaults(object target, string methodName, object playerTarget)
@@ -937,5 +1407,28 @@ namespace GiantessLLMMod.Core
 
         private string Truncate(string s, int max) =>
             s != null && s.Length > max ? s.Substring(0, max) + "..." : s;
+
+        private struct ActionGateDecision
+        {
+            public bool Allow;
+            public string Reason;
+
+            public static ActionGateDecision Accept(string reason)
+            {
+                return new ActionGateDecision { Allow = true, Reason = reason };
+            }
+
+            public static ActionGateDecision Reject(string reason)
+            {
+                return new ActionGateDecision { Allow = false, Reason = reason ?? "blocked" };
+            }
+        }
+
+        private class SurfaceTarget
+        {
+            public string Name;
+            public Vector3 DropPoint;
+            public Bounds Bounds;
+        }
     }
 }
