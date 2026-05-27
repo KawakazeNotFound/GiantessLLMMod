@@ -37,7 +37,7 @@
 
 ### ⚙️ Configuration
 
-Press the **F10** key (default) in-game to open the Mod Overlay.
+Press the **F8** key (default) in-game to open the Mod Overlay.
 
 * **API Settings:** Set your OpenAI-compatible `ApiBaseUrl`, `ApiKey`, and `ModelName`.
 * **Triggers:** Enable/Disable timed triggers or event-based triggers.
@@ -45,9 +45,9 @@ Press the **F10** key (default) in-game to open the Mod Overlay.
 
 ### ⌨️ Keybinds (Default)
 
-* **F10:** Toggle Mod Overlay UI.
-* **F9:** Manually trigger an AI response.
-* **F8:** Run Reflection Probe (Developer tool to scan game classes).
+* **F8:** Toggle Mod Overlay UI.
+* **F7:** Manually trigger an AI response.
+* **F9:** Run Reflection Probe (Developer tool to scan game classes).
 
 ---
 
@@ -75,16 +75,33 @@ Press the **F10** key (default) in-game to open the Mod Overlay.
 * **主动交互：** 可配置的基于时间或特定游戏事件的自动触发机制。
 * **反射驱动：** 利用先进的反射技术与游戏底层交互，实现灵活的动作控制。
 
-### 🛠️ 安装步骤
+### 🛠️ 详细安装教程
 
-1. 确保你的游戏目录已安装 **BepInEx 5**。
-2. 下载最新版本，并将 `GiantessLLMMod.dll` 放入 `BepInEx/plugins` 文件夹中。
-3. 确保 `Newtonsoft.Json.dll` 存在（通常 BepInEx 或游戏自带）。
-4. 启动一次游戏以生成配置文件。
+#### 第一步：安装 BepInEx (插件运行框架)
+如果你已经安装过 BepInEx，请直接跳到第二步。
+1.  **下载：** 前往 [BepInEx GitHub 发布页](https://github.com/BepInEx/BepInEx/releases)，下载 **BepInEx_x64_5.4.x.x.zip** (适用于 64 位游戏)。
+2.  **找到游戏文件夹：** 在 Steam 中右键点击 "Giantess Sandbox"，选择 **管理** > **浏览本地文件**。
+3.  **解压：** 打开下载好的 `.zip` 压缩包，将里面 **所有的文件和文件夹** 全部拖进你的游戏根目录（即包含 `Giantess Sandbox.exe` 的那个文件夹）。
+4.  **激活：** 运行一次游戏。看到游戏主界面后直接退出即可。此时游戏目录下会自动生成 `BepInEx/plugins` 等文件夹。
+
+#### 第二步：安装本模组
+1.  **下载：** 下载本模组的最新压缩包。
+2.  **放置文件：**
+    *   进入游戏目录下的 `BepInEx/plugins` 文件夹。
+    *   将 `GiantessLLMMod.dll` 放入 `plugins` 文件夹内。
+    *   确保文件夹内（或游戏自带库里）有 `Newtonsoft.Json.dll` 文件。
+3.  **检查：** 启动游戏。如果安装成功，在游戏中按下 **F8** 键会弹出模组的悬浮窗口。
+
+#### 第三步：配置 AI 接口
+模组需要连接到一个“AI 大脑”才能工作。
+1.  获取一个 API 密钥 (API Key)。你可以使用 OpenAI、DeepSeek，或者用 LM Studio 在本地运行模型。
+2.  在游戏中按下 **F8** 打开模组窗口。
+3.  点击 **Settings (设置)**，输入你的 **API Base URL (接口地址)** 和 **API Key (密钥)**。
+4.  点击保存后，就可以开始在聊天框里和 GTS 互动了。
 
 ### ⚙️ 配置说明
 
-在游戏中按下 **F10** 键（默认）打开模组悬浮窗。
+在游戏中按下 **F8** 键（默认）打开模组悬浮窗。
 
 * **API 设置：** 设置你的 OpenAI 兼容 `ApiBaseUrl` (接口地址)、`ApiKey` (密钥) 和 `ModelName` (模型名称)。
 * **触发器：** 开启/关闭定时触发或事件驱动触发。
@@ -92,9 +109,9 @@ Press the **F10** key (default) in-game to open the Mod Overlay.
 
 ### ⌨️ 快捷键（默认）
 
-* **F10:** 切换模组悬浮 UI 显示。
-* **F9:** 手动触发 AI 响应。
-* **F8:** 运行反射探测（开发者工具，用于扫描游戏类名）。
+* **F8:** 切换模组悬浮 UI 显示。
+* **F7:** 手动触发 AI 响应。
+* **F9:** 运行反射探测（开发者工具，用于扫描游戏类名）。
 
 ---
 
