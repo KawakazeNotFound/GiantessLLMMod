@@ -11,40 +11,40 @@
 
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>..\..\BepInEx\core\0Harmony.dll</HintPath>
+      <HintPath>libs\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\GiantessSandbox_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>libs\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>..\..\BepInEx\core\BepInEx.dll</HintPath>
+      <HintPath>libs\BepInEx.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\GiantessSandbox_Data\Managed\Newtonsoft.Json.dll</HintPath>
+      <HintPath>libs\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\GiantessSandbox_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>libs\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\GiantessSandbox_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>libs\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>..\..\GiantessSandbox_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>libs\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>..\..\GiantessSandbox_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>libs\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>..\..\GiantessSandbox_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+      <HintPath>libs\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AnimationModule">
-      <HintPath>..\..\GiantessSandbox_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
+      <HintPath>libs\UnityEngine.AnimationModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AIModule">
-      <HintPath>..\..\GiantessSandbox_Data\Managed\UnityEngine.AIModule.dll</HintPath>
+      <HintPath>libs\UnityEngine.AIModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\..\GiantessSandbox_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>libs\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 

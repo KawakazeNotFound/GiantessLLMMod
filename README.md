@@ -107,13 +107,30 @@ Press the **F8** key (default) in-game to open the Mod Overlay.
 * **触发器：** 开启/关闭定时触发或事件驱动触发。
 * **提示词：** 自定义系统提示词 (System Prompt) 以定义女巨人的个性。
 
-### ⌨️ 快捷键（默认）
+### 🚀 CI/CD & Development
 
-* **F8:** 切换模组悬浮 UI 显示。
-* **F7:** 手动触发 AI 响应。
-* **F9:** 运行反射探测（开发者工具，用于扫描游戏类名）。
+This project uses GitHub Actions for automated building and releasing.
+
+*   **Release Version:** Push a tag starting with `V` (e.g., `V1.0.0`) to trigger a full GitHub Release.
+*   **Dev Version:** Push a tag named `dev` to trigger a build and upload the DLL as an **Artifact** (downloadable from the Actions page).
+
+#### Dependency Management
+All necessary libraries (UnityEngine, BepInEx, etc.) are stored in the `libs/` folder. This allows the project to be compiled in a clean environment like GitHub Actions. If you update your game and need to update dependencies, copy the new DLLs into the `libs/` folder.
 
 ---
+
+### 🚀 持续集成与开发 (CI/CD)
+
+项目使用 GitHub Actions 进行自动构建和发布。
+
+*   **正式版本：** 推送以 `V` 开头的标签（例如 `V1.0.0`）将触发自动创建 GitHub Release。
+*   **开发版本：** 推送名为 `dev` 的标签将触发构建，并将生成的 DLL 上传为 **Artifact**（可在 Actions 页面下载）。
+
+#### 依赖管理
+所有必要的库（UnityEngine、BepInEx 等）都存放在 `libs/` 文件夹中。这使得项目可以在 GitHub Actions 等干净的环境中编译。如果你更新了游戏并需要更新依赖，请将新的 DLL 复制到 `libs/` 文件夹中。
+
+---
+
 
 ### ⚠️ Disclaimer / 免责声明
 
