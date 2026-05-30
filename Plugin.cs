@@ -21,7 +21,7 @@ namespace GiantessLLMMod
     {
         public const string PLUGIN_GUID = "com.giantess.llmmod";
         public const string PLUGIN_NAME = "Giantess LLM Mod";
-        public const string PLUGIN_VERSION = "1.0.0";
+        public const string PLUGIN_VERSION = "0.0.3";
 
         // Core systems
         private ConfigManager _config;
@@ -49,10 +49,13 @@ namespace GiantessLLMMod
             _harmony.PatchAll(typeof(UIInputBlocker).Assembly);
 
             // Initialize systems
-            _collector = new GameStateCollector(Logger);
+            _collector = new GameStateCollector(Logger, _config);
             _llmClient = new LLMClient(Logger, _config);
             _executor = new ActionExecutor(Logger, _collector, _config);
             _eventWatcher = new EventWatcher(Logger);
+            
+            // Initialize OpenAI tool bridge
+            ToolBridge.Init(Logger, _executor, _collector, _config);
 
             // Initialize UI
             _ui = new ModOverlayUI();
@@ -249,7 +252,8 @@ namespace GiantessLLMMod
                     _ui.AddLog($"LLM Error: {error}");
                     _ui.AddChatEntry("System", $"Error: {error}", Color.red);
                     Logger.LogError($"LLM error: {error}");
-                }
+                },
+                tools: ToolBridge.GetToolDefinitions()
             );
         }
 

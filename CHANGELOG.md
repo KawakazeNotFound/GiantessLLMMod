@@ -1,9 +1,14 @@
 # Changelog
 
-## 2026-05-28
+## [v0.0.3] - 2026-05-30
 
 ### Added
+- Added "Save to Disk" button in the Config UI to permanently save settings to the BepInEx `.cfg` file.
+- Added a `ScrollView` to the Config UI tab to ensure all options and buttons remain accessible regardless of window height.
 
+## [v0.0.2] - 2026-05-28
+
+### Added
 - Added native action conflict gating before executing LLM actions.
   - Detects busy native activity queues and active desired actions before enqueueing a new command.
   - Blocks obviously invalid commands such as swallowing when nothing is in the mouth, stomach actions when the player is not in the stomach, or held-object actions when nothing is held.

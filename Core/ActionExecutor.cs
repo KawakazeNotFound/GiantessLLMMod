@@ -139,7 +139,133 @@ namespace GiantessLLMMod.Core
             _log.LogInfo($"Executed: {LastExecutionLog}");
         }
 
-        // ──────────────────── Emotion (qGts_SetFaceFlex) ────────────────────
+        public Component FindGiantess(string target)
+        {
+            if (target == "first" || string.IsNullOrEmpty(target))
+                return _collector.GetFirstGiantessAI();
+            
+            // In a more complex game we'd search by name, for now just first
+            return _collector.GetFirstGiantessAI();
+        }
+
+        public bool ForceInterrupt(Component ai)
+        {
+            try
+            {
+                EnsureCache();
+                var mb = ai as MonoBehaviour;
+                if (mb == null) return false;
+
+                var activity = _collector.GetAISubComponent(ai, "activity");
+                bool cleared = TryForceInterruptBusyActions(mb, activity);
+                if (!cleared) return false;
+
+                _log.LogInfo("Forced interrupt on GiantessAI");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning($"Failed to force interrupt: {ex.Message}");
+                return false;
+            }
+        }
+
+        public bool TrySetDebugFloatProperty(Component ai, string path, float value, out string message)
+        {
+            message = null;
+            if (!TryGetDebugFloatPropertyRule(path, out float min, out float max))
+            {
+                message = $"Property '{path}' is not allowlisted";
+                return false;
+            }
+
+            float clamped = Mathf.Clamp(value, min, max);
+
+            try
+            {
+                object target = ai;
+                string[] parts = path.Split('.');
+                
+                for (int i = 0; i < parts.Length - 1; i++)
+                {
+                    target = ResolveFieldOrProperty(target, parts[i]);
+                    if (target == null)
+                    {
+                        message = $"Could not resolve '{parts[i]}' in '{path}'";
+                        return false;
+                    }
+                }
+
+                bool success = TrySetFieldValue(target, parts.Last(), clamped);
+                message = success ? $"Set {path} to {clamped}" : $"Could not set '{path}'";
+                return success;
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning($"Failed to set property {path}: {ex.Message}");
+                message = ex.Message;
+                return false;
+            }
+        }
+
+        private bool TryGetDebugFloatPropertyRule(string path, out float min, out float max)
+        {
+            min = 0f;
+            max = 1f;
+            switch ((path ?? "").Trim())
+            {
+                case "m_Hunger":
+                case "m_Horniness":
+                    return true;
+                case "m_Stomach.m_BurpBuildUp":
+                    max = 10f;
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private object ResolveFieldOrProperty(object target, string name)
+        {
+            if (target == null || string.IsNullOrEmpty(name)) return null;
+
+            var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            var field = target.GetType().GetField(name, flags);
+            if (field != null) return field.GetValue(target);
+
+            var prop = target.GetType().GetProperty(name, flags);
+            return prop != null && prop.GetIndexParameters().Length == 0
+                ? prop.GetValue(target, null)
+                : null;
+        }
+
+        private bool TrySetFieldValue(object target, string fieldName, object value)
+        {
+            if (target == null) return false;
+            var field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (field != null)
+            {
+                try
+                {
+                    object converted = Convert.ChangeType(value, field.FieldType);
+                    field.SetValue(target, converted);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    _log.LogWarning($"TrySetFieldValue {fieldName}: {ex.Message}");
+                }
+            }
+            return false;
+        }
+
+        private T GetField<T>(object target, string name, T defaultValue)
+        {
+            if (target == null) return defaultValue;
+            var field = target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (field != null) return (T)field.GetValue(target);
+            return defaultValue;
+        }
 
         private void SetEmotion(MonoBehaviour ai, string emotion)
         {
@@ -165,12 +291,14 @@ namespace GiantessLLMMod.Core
                 // Prefer the emotion component directly. qGts_SetFaceFlex is itself an
                 // activity and can block/queue ahead of the real action being tested.
                 var emotionComp = _collector.GetAISubComponent(ai, "emotion");
+                float blendTime = _config.EmotionBlendTime.Value;
+
                 if (emotionComp != null)
                 {
-                    bool eyeOk = TryInvokeByName(emotionComp, "SetEyesFlex", eyesVal, 0.25f)
-                        || TryInvokeByName(emotionComp, "SetEyesFlex", eyesVal, 0.25f, true);
-                    bool mouthOk = TryInvokeByName(emotionComp, "SetMouthFlex", mouthVal, 0.25f)
-                        || TryInvokeByName(emotionComp, "SetMouthFlex", mouthVal, 0.25f, true);
+                    bool eyeOk = TryInvokeByName(emotionComp, "SetEyesFlex", eyesVal, blendTime)
+                        || TryInvokeByName(emotionComp, "SetEyesFlex", eyesVal, blendTime, true);
+                    bool mouthOk = TryInvokeByName(emotionComp, "SetMouthFlex", mouthVal, blendTime)
+                        || TryInvokeByName(emotionComp, "SetMouthFlex", mouthVal, blendTime, true);
 
                     if (!eyeOk) SetField(emotionComp, "m_EyesFlexType", eyesVal);
                     if (!mouthOk) SetField(emotionComp, "m_MouthFlexType", mouthVal);

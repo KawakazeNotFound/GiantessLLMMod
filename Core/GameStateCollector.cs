@@ -15,6 +15,7 @@ namespace GiantessLLMMod.Core
     public class GameStateCollector
     {
         private readonly ManualLogSource _log;
+        private readonly ConfigManager _config;
 
         // Cached assembly + types
         private Assembly _gameAssembly;
@@ -112,9 +113,10 @@ namespace GiantessLLMMod.Core
             public float Burp;
         }
 
-        public GameStateCollector(ManualLogSource log)
+        public GameStateCollector(ManualLogSource log, ConfigManager config = null)
         {
             _log = log;
+            _config = config;
         }
 
         /// <summary>
@@ -452,6 +454,7 @@ namespace GiantessLLMMod.Core
         {
             string key = gs.Name ?? "Unknown";
             float now = Time.time;
+            float threshold = _config?.TrendThreshold.Value ?? 0.05f;
 
             if (_previousStomachSamples.TryGetValue(key, out var prev))
             {
@@ -459,12 +462,15 @@ namespace GiantessLLMMod.Core
 
                 gs.StomachActivityDelta = gs.StomachActivity - prev.Activity;
                 gs.StomachActivityRate = gs.StomachActivityDelta / dt;
+                if (Math.Abs(gs.StomachActivityRate) < threshold) gs.StomachActivityRate = 0f;
 
                 gs.StomachAcidDelta = gs.StomachAcid - prev.Acid;
                 gs.StomachAcidRate = gs.StomachAcidDelta / dt;
+                if (Math.Abs(gs.StomachAcidRate) < threshold) gs.StomachAcidRate = 0f;
 
                 gs.BurpBuildUpDelta = gs.BurpBuildUp - prev.Burp;
                 gs.BurpBuildUpRate = gs.BurpBuildUpDelta / dt;
+                if (Math.Abs(gs.BurpBuildUpRate) < threshold) gs.BurpBuildUpRate = 0f;
             }
 
             _previousStomachSamples[key] = new StomachTrendSample
@@ -534,7 +540,7 @@ namespace GiantessLLMMod.Core
             return candidates
                 .OrderBy(c => c.Kind == "table" || c.Kind == "desk" ? 0 : 1)
                 .ThenBy(c => c.DistanceToPlayer)
-                .Take(16)
+                .Take(_config?.MaxSceneObjects.Value ?? 16)
                 .ToList();
         }
 
@@ -563,14 +569,29 @@ namespace GiantessLLMMod.Core
             if (string.IsNullOrEmpty(name)) return null;
             string n = name.ToLowerInvariant();
 
-            if (n.Contains("table") || n.Contains("desk") || n.Contains("桌"))
-                return n.Contains("desk") ? "desk" : "table";
-            if (n.Contains("counter") || n.Contains("bench"))
-                return "counter";
+            string[] tableKws = (_config?.TableKeywords.Value ?? "table,desk,桌,counter,bench")
+                .Split(',')
+                .Select(k => k.Trim().ToLower())
+                .Where(k => !string.IsNullOrEmpty(k))
+                .ToArray();
+            string[] bedKws = (_config?.BedKeywords.Value ?? "bed,床,sofa,couch")
+                .Split(',')
+                .Select(k => k.Trim().ToLower())
+                .Where(k => !string.IsNullOrEmpty(k))
+                .ToArray();
+
+            foreach (var kw in tableKws)
+            {
+                if (n.Contains(kw)) return "table";
+            }
+
+            foreach (var kw in bedKws)
+            {
+                if (n.Contains(kw)) return "bed";
+            }
+
             if (n.Contains("shelf") || n.Contains("cabinet"))
                 return "shelf";
-            if (n.Contains("bed"))
-                return "bed";
             if (n.Contains("floor") || n.Contains("ground"))
                 return "floor";
 
@@ -944,9 +965,9 @@ namespace GiantessLLMMod.Core
         public Assembly GetGameAssembly() => _gameAssembly;
 
         /// <summary>Get a sub-component field value from a GiantessAI instance.</summary>
-        public object GetAISubComponent(MonoBehaviour ai, string subName)
+        public object GetAISubComponent(Component ai, string subName)
         {
-            switch (subName)
+            switch (subName.ToLower())
             {
                 case "personality": return GetField<object>(ai, _ai_personality, null);
                 case "stomach":    return GetField<object>(ai, _ai_stomach, null);
@@ -955,8 +976,54 @@ namespace GiantessLLMMod.Core
                 case "activity":   return GetField<object>(ai, _ai_activityInterface, null);
                 case "cache":      return GetField<object>(ai, _ai_cache, null);
                 case "conversation": return GetField<object>(ai, _ai_conversation, null);
+                case "movement":   return GetFieldByName<object>(ai, "m_Movement");
                 default: return null;
             }
+        }
+
+        public object GetRawProperty(Component ai, string path)
+        {
+            try
+            {
+                object target = ai;
+                string[] parts = path.Split('.');
+
+                foreach (var part in parts)
+                {
+                    if (target == null) return null;
+                    
+                    // Try as sub-component first (ai, stomach, etc)
+                    if (ReferenceEquals(target, ai))
+                    {
+                        var comp = GetAISubComponent(ai, part);
+                        if (comp != null) { target = comp; continue; }
+                    }
+
+                    object current = target;
+                    target = GetField<object>(current, part, null);
+                    if (target != null) continue;
+
+                    var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+                    var prop = current.GetType().GetProperty(part, flags);
+                    if (prop != null && prop.GetIndexParameters().Length == 0)
+                        target = prop.GetValue(current, null);
+                }
+
+                return target;
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning($"Failed to get raw property {path}: {ex.Message}");
+                return null;
+            }
+        }
+
+        private T GetField<T>(object target, string name, T defaultValue)
+        {
+            if (target == null) return defaultValue;
+            var field = target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (field != null) return (T)field.GetValue(target);
+            return defaultValue;
         }
     }
 }

@@ -32,11 +32,21 @@ namespace GiantessLLMMod.Core
         public ConfigEntry<int> MaxConversationHistory;
         public ConfigEntry<bool> EnableNativeDialogue;
         public ConfigEntry<int> DialogueTimeout;
+        public ConfigEntry<int> MaxDialogueLength;
         public ConfigEntry<bool> DryRunMode;
         public ConfigEntry<bool> PreventActionConflicts;
         public ConfigEntry<bool> ForceInterruptBusyActions;
         public ConfigEntry<string> ActionConflictPolicy;
         public ConfigEntry<bool> AllowActionsDuringScriptedState;
+        public ConfigEntry<int> IdleStateId;
+
+        // ─── Reflection & Collection ───
+        public ConfigEntry<int> MaxSceneObjects;
+        public ConfigEntry<string> TableKeywords;
+        public ConfigEntry<string> BedKeywords;
+        public ConfigEntry<float> TrendThreshold;
+        public ConfigEntry<float> EmotionBlendTime;
+        public ConfigEntry<int> ApiTimeoutMs;
 
         // ─── Keys ───
         public ConfigEntry<KeyCode> ToggleUIKey;
@@ -45,13 +55,17 @@ namespace GiantessLLMMod.Core
 
         // ─── Debug ───
         public ConfigEntry<bool> DebugLogging;
+        public ConfigEntry<bool> EnableDebugPropertyTools;
 
         // ─── System Prompt ───
         public ConfigEntry<string> CustomSystemPrompt;
         public ConfigEntry<string> SystemPromptFile;
 
+        private ConfigFile _configFile;
+
         public ConfigManager(ConfigFile config)
         {
+            _configFile = config;
             // LLM API
             ApiBaseUrl = config.Bind("LLM API", "ApiBaseUrl",
                 "http://127.0.0.1:1234/v1",
@@ -110,6 +124,10 @@ namespace GiantessLLMMod.Core
                 8,
                 "Seconds before dialogue auto-dismisses (native mode)");
 
+            MaxDialogueLength = config.Bind("Behavior", "MaxDialogueLength",
+                200,
+                "Maximum characters for LLM dialogue before truncation.");
+
             DryRunMode = config.Bind("Behavior", "DryRunMode",
                 false,
                 "If true, don't actually call LLM — use hardcoded test responses");
@@ -130,6 +148,35 @@ namespace GiantessLLMMod.Core
                 true,
                 "Allow actions while the AI is in GTSSCRIPT/EXEC_SCRIPT. Busy native queues are still handled by ActionConflictPolicy.");
 
+            IdleStateId = config.Bind("Behavior", "IdleStateId",
+                0,
+                "The state ID to set when interrupting AI (usually 0 for IDLE).");
+
+            // Reflection & Collection
+            MaxSceneObjects = config.Bind("Reflection", "MaxSceneObjects",
+                16,
+                "Maximum number of nearby objects to send to LLM.");
+
+            TableKeywords = config.Bind("Reflection", "TableKeywords",
+                "table,desk,桌,counter,bench",
+                "Comma-separated keywords to identify table-like surfaces.");
+
+            BedKeywords = config.Bind("Reflection", "BedKeywords",
+                "bed,床,sofa,couch",
+                "Comma-separated keywords to identify bed-like surfaces.");
+
+            TrendThreshold = config.Bind("Reflection", "TrendThreshold",
+                0.05f,
+                "Minimum change rate to report trend (+/-) for stomach/acid.");
+
+            EmotionBlendTime = config.Bind("Reflection", "EmotionBlendTime",
+                0.25f,
+                "Seconds to blend facial expressions.");
+
+            ApiTimeoutMs = config.Bind("LLM API", "ApiTimeoutMs",
+                45000,
+                "Timeout in milliseconds for LLM API calls.");
+
             // Keys
             ToggleUIKey = config.Bind("Keys", "ToggleUI",
                 KeyCode.F8,
@@ -147,6 +194,10 @@ namespace GiantessLLMMod.Core
             DebugLogging = config.Bind("Debug", "DebugLogging",
                 false,
                 "Enable verbose debug logging");
+
+            EnableDebugPropertyTools = config.Bind("Debug", "EnableDebugPropertyTools",
+                false,
+                "Expose debug-only float property write tools to the LLM. Keep disabled unless actively testing.");
 
             // System Prompt
             CustomSystemPrompt = config.Bind("Prompt", "SystemPrompt",
@@ -295,5 +346,9 @@ namespace GiantessLLMMod.Core
             }
         }
 
+        public void Save()
+        {
+            _configFile?.Save();
+        }
     }
 }

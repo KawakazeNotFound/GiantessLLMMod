@@ -11,12 +11,16 @@ namespace GiantessLLMMod.Models
         [JsonProperty("messages")] public List<ChatMessage> Messages;
         [JsonProperty("temperature")] public float Temperature;
         [JsonProperty("max_tokens")] public int MaxTokens;
+        [JsonProperty("tools")] public List<ToolDefinition> Tools;
+        [JsonProperty("tool_choice")] public object ToolChoice;
     }
 
     public class ChatMessage
     {
         [JsonProperty("role")] public string Role;
         [JsonProperty("content")] public string Content;
+        [JsonProperty("tool_calls")] public List<ToolCall> ToolCalls;
+        [JsonProperty("tool_call_id")] public string ToolCallId;
 
         public ChatMessage() { }
         public ChatMessage(string role, string content)
@@ -24,6 +28,32 @@ namespace GiantessLLMMod.Models
             Role = role;
             Content = content;
         }
+    }
+
+    public class ToolDefinition
+    {
+        [JsonProperty("type")] public string Type = "function";
+        [JsonProperty("function")] public FunctionDefinition Function;
+    }
+
+    public class FunctionDefinition
+    {
+        [JsonProperty("name")] public string Name;
+        [JsonProperty("description")] public string Description;
+        [JsonProperty("parameters")] public object Parameters; // Use a JSON Schema object
+    }
+
+    public class ToolCall
+    {
+        [JsonProperty("id")] public string Id;
+        [JsonProperty("type")] public string Type;
+        [JsonProperty("function")] public FunctionCall Function;
+    }
+
+    public class FunctionCall
+    {
+        [JsonProperty("name")] public string Name;
+        [JsonProperty("arguments")] public string Arguments;
     }
 
     public class ChatCompletionResponse

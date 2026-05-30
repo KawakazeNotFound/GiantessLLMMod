@@ -23,6 +23,9 @@ namespace GiantessLLMMod.UI
         // Status scroll
         private Vector2 _statusScroll;
 
+        // Config scroll
+        private Vector2 _configScroll;
+
         // Config temp values
         private string _cfgApiUrl, _cfgApiKey, _cfgModel;
         private string _testActionInput = "face_player";
@@ -208,6 +211,8 @@ namespace GiantessLLMMod.UI
 
         private void DrawConfigTab()
         {
+            _configScroll = GUILayout.BeginScrollView(_configScroll);
+
             GUILayout.Label("── LLM API ──", _headerStyle);
             GUILayout.BeginHorizontal();
             GUILayout.Label("URL:", GUILayout.Width(50));
@@ -259,25 +264,47 @@ namespace GiantessLLMMod.UI
             GUILayout.EndHorizontal();
 
             GUILayout.Space(5);
+            GUILayout.BeginHorizontal();
             if (GUILayout.Button("Apply Settings"))
             {
-                _config.ApiBaseUrl.Value = _cfgApiUrl?.Trim();
-                _config.ApiKey.Value = _cfgApiKey?.Trim();
-                _config.ModelName.Value = _cfgModel?.Trim();
-                _config.TimedTriggerEnabled.Value = _cfgTimedTrigger;
-                _config.TimedTriggerInterval.Value = Mathf.Clamp(_cfgTimedTriggerInterval, 5f, 120f);
-                _config.EventTriggerEnabled.Value = _cfgEventTrigger;
-                _config.EventTriggerCooldown.Value = Mathf.Clamp(_cfgEventTriggerCooldown, 5f, 300f);
-                _config.EnableNativeDialogue.Value = _cfgNativeDialogue;
-                _config.DryRunMode.Value = _cfgDryRun;
-                _config.ForceInterruptBusyActions.Value = _cfgForceInterruptBusyActions;
-                _config.DebugLogging.Value = _cfgDebug;
-                AddLog("Settings applied.");
+                ApplyAndSave(false);
             }
+            if (GUILayout.Button("Save to Disk", GUILayout.Width(100)))
+            {
+                ApplyAndSave(true);
+            }
+            GUILayout.EndHorizontal();
 
             if (GUILayout.Button("Reset to Defaults"))
             {
                 SyncConfigValues();
+            }
+
+            GUILayout.EndScrollView();
+        }
+
+        private void ApplyAndSave(bool saveToDisk)
+        {
+            _config.ApiBaseUrl.Value = _cfgApiUrl?.Trim();
+            _config.ApiKey.Value = _cfgApiKey?.Trim();
+            _config.ModelName.Value = _cfgModel?.Trim();
+            _config.TimedTriggerEnabled.Value = _cfgTimedTrigger;
+            _config.TimedTriggerInterval.Value = Mathf.Clamp(_cfgTimedTriggerInterval, 5f, 120f);
+            _config.EventTriggerEnabled.Value = _cfgEventTrigger;
+            _config.EventTriggerCooldown.Value = Mathf.Clamp(_cfgEventTriggerCooldown, 5f, 300f);
+            _config.EnableNativeDialogue.Value = _cfgNativeDialogue;
+            _config.DryRunMode.Value = _cfgDryRun;
+            _config.ForceInterruptBusyActions.Value = _cfgForceInterruptBusyActions;
+            _config.DebugLogging.Value = _cfgDebug;
+
+            if (saveToDisk)
+            {
+                _config.Save();
+                AddLog("Settings applied and saved to disk.");
+            }
+            else
+            {
+                AddLog("Settings applied (memory only).");
             }
         }
 

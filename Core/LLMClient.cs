@@ -52,8 +52,9 @@ namespace GiantessLLMMod.Core
 
         /// <summary>
         /// Send game state to LLM and get an action response (async via ThreadPool).
+        /// Supports Tool Calling.
         /// </summary>
-        public void SendRequest(GameStateSnapshot state, Action<LLMActionResponse> onSuccess, Action<string> onError)
+        public void SendRequest(GameStateSnapshot state, Action<LLMActionResponse> onSuccess, Action<string> onError, List<ToolDefinition> tools = null)
         {
             if (_isBusy)
             {
@@ -93,35 +94,32 @@ namespace GiantessLLMMod.Core
                     string assistantContent = null;
                     LLMActionResponse actionResponse = null;
                     var requestMessages = new List<ChatMessage>(messages);
-                    const int maxRetries = 2;
+                    const int maxToolRounds = 3;
 
-                    for (int attempt = 0; attempt <= maxRetries; attempt++)
+                    for (int round = 0; round <= maxToolRounds; round++)
                     {
                         var request = new ChatCompletionRequest
                         {
                             Model = _config.ModelName.Value,
                             Messages = requestMessages,
                             Temperature = _config.Temperature.Value,
-                            MaxTokens = _config.MaxTokens.Value
+                            MaxTokens = _config.MaxTokens.Value,
+                            Tools = tools
                         };
 
-                        string requestJson = JsonConvert.SerializeObject(request);
+                        string requestJson = JsonConvert.SerializeObject(request, new JsonSerializerSettings 
+                        { 
+                            NullValueHandling = NullValueHandling.Ignore 
+                        });
+                        
                         string apiBaseUrl = _config.ApiBaseUrl.Value.Trim().TrimEnd('/');
                         string apiKey = NormalizeApiKey(_config.ApiKey.Value);
-
-                        if (_config.DebugLogging.Value)
-                        {
-                            string keyStatus = string.IsNullOrEmpty(apiKey)
-                                ? "missing"
-                                : $"present len={apiKey.Length}";
-                            _log.LogInfo($"LLM request target={apiBaseUrl}/chat/completions model={_config.ModelName.Value} apiKey={keyStatus}");
-                        }
 
                         string responseJson = DoHttpPost(
                             apiBaseUrl + "/chat/completions",
                             requestJson,
                             apiKey,
-                            30000 // 30s timeout
+                            _config.ApiTimeoutMs.Value
                         );
 
                         var response = JsonConvert.DeserializeObject<ChatCompletionResponse>(responseJson);
@@ -135,34 +133,35 @@ namespace GiantessLLMMod.Core
                             return;
                         }
 
-                        assistantContent = response.Choices[0].Message.Content;
+                        var choice = response.Choices[0];
+                        assistantContent = choice.Message.Content;
 
-                        if (_config.DebugLogging.Value)
-                            _log.LogInfo($"LLM raw response attempt {attempt + 1}: {assistantContent}");
-
-                        actionResponse = ParseActionResponse(assistantContent, normalizeInvalid: false);
-                        if (IsValidActionResponse(actionResponse))
+                        if (choice.Message.ToolCalls != null && choice.Message.ToolCalls.Count > 0)
                         {
-                            NormalizeActionResponse(actionResponse);
-                            break;
+                            requestMessages.Add(choice.Message);
+                            requestMessages.AddRange(ExecuteToolCallsOnMainThread(choice.Message.ToolCalls));
+                            assistantContent = null;
+                            continue;
                         }
 
-                        string badAction = actionResponse?.Action ?? "<missing>";
-                        if (attempt >= maxRetries)
+                        if (!string.IsNullOrEmpty(assistantContent))
                         {
-                            _log.LogWarning($"LLM returned invalid action after retries: {badAction}");
-                            actionResponse = ParseActionResponse(assistantContent, normalizeInvalid: true);
-                            break;
+                            actionResponse = ParseActionResponse(assistantContent, normalizeInvalid: false);
+                            if (IsValidActionResponse(actionResponse))
+                            {
+                                NormalizeActionResponse(actionResponse);
+                                break;
+                            }
                         }
-
-                        requestMessages.Add(new ChatMessage("assistant", assistantContent ?? ""));
-                        requestMessages.Add(new ChatMessage(
-                            "user",
-                            "Invalid response: action must be exactly one of the whitelist. " +
-                            $"Your action was '{badAction}'. Return only valid JSON. " +
-                            ActionDefinitions.GetActionsDescription()
-                        ));
                     }
+
+                    if (actionResponse == null)
+                        actionResponse = new LLMActionResponse
+                        {
+                            Action = "face_player",
+                            Emotion = "curious",
+                            Dialogue = null
+                        };
 
                     // Update conversation history
                     lock (_historyLock)
@@ -188,24 +187,44 @@ namespace GiantessLLMMod.Core
                 {
                     string detail = ReadWebExceptionDetail(ex);
                     _log.LogError($"LLM request failed: {detail}");
-
-                    EnqueueMainThread(() =>
-                    {
-                        _isBusy = false;
-                        onError?.Invoke(detail);
-                    });
+                    EnqueueMainThread(() => { _isBusy = false; onError?.Invoke(detail); });
                 }
                 catch (Exception ex)
                 {
                     _log.LogError($"LLM request failed: {ex.Message}");
-
-                    EnqueueMainThread(() =>
-                    {
-                        _isBusy = false;
-                        onError?.Invoke(ex.Message);
-                    });
+                    EnqueueMainThread(() => { _isBusy = false; onError?.Invoke(ex.Message); });
                 }
             });
+        }
+
+        private List<ChatMessage> ExecuteToolCallsOnMainThread(List<ToolCall> toolCalls)
+        {
+            var done = new ManualResetEvent(false);
+            List<ChatMessage> results = null;
+
+            EnqueueMainThread(() =>
+            {
+                try
+                {
+                    results = new List<ChatMessage>();
+                    foreach (var call in toolCalls)
+                    {
+                        string output = call?.Function == null
+                            ? "{\"success\":false,\"error\":\"Malformed tool call\"}"
+                            : ToolBridge.ExecuteTool(call.Function.Name, call.Function.Arguments);
+                        results.Add(new ChatMessage("tool", output) { ToolCallId = call?.Id });
+                    }
+                }
+                finally
+                {
+                    done.Set();
+                }
+            });
+
+            if (!done.WaitOne(10000))
+                throw new TimeoutException("Timed out waiting for tool execution on Unity main thread");
+
+            return results ?? new List<ChatMessage>();
         }
 
         private string ReadWebExceptionDetail(WebException ex)
