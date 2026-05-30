@@ -75,6 +75,28 @@ namespace GiantessLLMMod.Models
         [JsonProperty("total_tokens")] public int TotalTokens;
     }
 
+    // ──────────────── Ollama API models ────────────────
+
+    public class OllamaGenerateRequest
+    {
+        [JsonProperty("model")] public string Model;
+        [JsonProperty("prompt")] public string Prompt;
+        [JsonProperty("stream")] public bool Stream;
+        [JsonProperty("options")] public OllamaOptions Options;
+    }
+
+    public class OllamaOptions
+    {
+        [JsonProperty("temperature")] public float Temperature;
+        [JsonProperty("num_predict")] public int NumPredict;
+    }
+
+    public class OllamaGenerateResponse
+    {
+        [JsonProperty("response")] public string Response;
+        [JsonProperty("done")] public bool Done;
+    }
+
     // ──────────────── LLM structured response ────────────────
 
     /// <summary>

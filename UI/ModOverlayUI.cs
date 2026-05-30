@@ -215,7 +215,7 @@ namespace GiantessLLMMod.UI
 
             GUILayout.Label("── LLM API ──", _headerStyle);
             GUILayout.BeginHorizontal();
-            GUILayout.Label("URL:", GUILayout.Width(50));
+            GUILayout.Label("Full URL:", GUILayout.Width(70));
             _cfgApiUrl = GUILayout.TextField(_cfgApiUrl);
             GUILayout.EndHorizontal();
 

@@ -40,6 +40,8 @@
 Press the **F8** key (default) in-game to open the Mod Overlay.
 
 * **API Settings:** Set your OpenAI-compatible `ApiBaseUrl`, `ApiKey`, and `ModelName`.
+  * **To use standard OpenAI format:** Set URL to an endpoint like `http://127.0.0.1:11434/v1/chat/completions`.
+  * **To use Ollama native format:** Set URL ending with `/api/generate` (e.g., `http://127.0.0.1:11434/api/generate`). The mod will auto-detect this and switch to Ollama's native prompt format.
 * **Triggers:** Enable/Disable timed triggers or event-based triggers.
 * **Prompts:** Customize the system prompt to define the personality of the giantesses.
 
@@ -104,6 +106,8 @@ Press the **F8** key (default) in-game to open the Mod Overlay.
 在游戏中按下 **F8** 键（默认）打开模组悬浮窗。
 
 * **API 设置：** 设置你的 OpenAI 兼容 `ApiBaseUrl` (接口地址)、`ApiKey` (密钥) 和 `ModelName` (模型名称)。
+  * **使用标准 OpenAI 格式：** 将接口地址设置为如 `http://127.0.0.1:11434/v1/chat/completions`。
+  * **使用 Ollama 原生格式：** 将接口地址设置为以 `/api/generate` 结尾（如 `http://127.0.0.1:11434/api/generate`）。模组会自动检测并切换到 Ollama 原生的提问格式。
 * **触发器：** 开启/关闭定时触发或事件驱动触发。
 * **提示词：** 自定义系统提示词 (System Prompt) 以定义女巨人的个性。
 

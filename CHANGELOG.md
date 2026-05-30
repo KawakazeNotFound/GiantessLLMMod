@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.0.4] - 2026-05-30
+
+### Changed
+- Refactored API URL handling: The mod no longer automatically appends `/chat/completions` to the configured URL. Users must now provide the full endpoint URL.
+- Updated default `ApiBaseUrl` to include the full `/v1/chat/completions` path to maintain compatibility for new installations.
+- Added auto-detection for Ollama's native API: If `ApiBaseUrl` ends with `/api/generate`, the mod will automatically use Ollama's native request/response format instead of the OpenAI format.
+
 ## [v0.0.3] - 2026-05-30
 
 ### Added

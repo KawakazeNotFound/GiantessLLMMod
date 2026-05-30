@@ -98,50 +98,99 @@ namespace GiantessLLMMod.Core
 
                     for (int round = 0; round <= maxToolRounds; round++)
                     {
-                        var request = new ChatCompletionRequest
-                        {
-                            Model = _config.ModelName.Value,
-                            Messages = requestMessages,
-                            Temperature = _config.Temperature.Value,
-                            MaxTokens = _config.MaxTokens.Value,
-                            Tools = tools
-                        };
-
-                        string requestJson = JsonConvert.SerializeObject(request, new JsonSerializerSettings 
-                        { 
-                            NullValueHandling = NullValueHandling.Ignore 
-                        });
-                        
-                        string apiBaseUrl = _config.ApiBaseUrl.Value.Trim().TrimEnd('/');
+                        string apiUrl = _config.ApiBaseUrl.Value.Trim();
                         string apiKey = NormalizeApiKey(_config.ApiKey.Value);
+                        bool isOllamaGenerate = apiUrl.EndsWith("/api/generate", StringComparison.OrdinalIgnoreCase);
+
+                        string requestJson;
+                        if (isOllamaGenerate)
+                        {
+                            var sb = new StringBuilder();
+                            foreach (var msg in requestMessages)
+                            {
+                                if (msg.Content != null)
+                                {
+                                    sb.AppendLine($"{msg.Role.ToUpper()}:");
+                                    sb.AppendLine(msg.Content);
+                                    sb.AppendLine();
+                                }
+                            }
+                            sb.AppendLine("ASSISTANT:");
+                            
+                            var ollamaReq = new OllamaGenerateRequest
+                            {
+                                Model = _config.ModelName.Value,
+                                Prompt = sb.ToString(),
+                                Stream = false,
+                                Options = new OllamaOptions
+                                {
+                                    Temperature = _config.Temperature.Value,
+                                    NumPredict = _config.MaxTokens.Value
+                                }
+                            };
+                            requestJson = JsonConvert.SerializeObject(ollamaReq, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                        }
+                        else
+                        {
+                            var request = new ChatCompletionRequest
+                            {
+                                Model = _config.ModelName.Value,
+                                Messages = requestMessages,
+                                Temperature = _config.Temperature.Value,
+                                MaxTokens = _config.MaxTokens.Value,
+                                Tools = tools
+                            };
+
+                            requestJson = JsonConvert.SerializeObject(request, new JsonSerializerSettings 
+                            { 
+                                NullValueHandling = NullValueHandling.Ignore 
+                            });
+                        }
 
                         string responseJson = DoHttpPost(
-                            apiBaseUrl + "/chat/completions",
+                            apiUrl,
                             requestJson,
                             apiKey,
                             _config.ApiTimeoutMs.Value
                         );
 
-                        var response = JsonConvert.DeserializeObject<ChatCompletionResponse>(responseJson);
-                        if (response?.Choices == null || response.Choices.Count == 0)
+                        if (isOllamaGenerate)
                         {
-                            EnqueueMainThread(() =>
+                            var response = JsonConvert.DeserializeObject<OllamaGenerateResponse>(responseJson);
+                            if (string.IsNullOrEmpty(response?.Response))
                             {
-                                _isBusy = false;
-                                onError?.Invoke("Empty response from LLM");
-                            });
-                            return;
+                                EnqueueMainThread(() =>
+                                {
+                                    _isBusy = false;
+                                    onError?.Invoke("Empty response from Ollama API");
+                                });
+                                return;
+                            }
+                            assistantContent = response.Response;
                         }
-
-                        var choice = response.Choices[0];
-                        assistantContent = choice.Message.Content;
-
-                        if (choice.Message.ToolCalls != null && choice.Message.ToolCalls.Count > 0)
+                        else
                         {
-                            requestMessages.Add(choice.Message);
-                            requestMessages.AddRange(ExecuteToolCallsOnMainThread(choice.Message.ToolCalls));
-                            assistantContent = null;
-                            continue;
+                            var response = JsonConvert.DeserializeObject<ChatCompletionResponse>(responseJson);
+                            if (response?.Choices == null || response.Choices.Count == 0)
+                            {
+                                EnqueueMainThread(() =>
+                                {
+                                    _isBusy = false;
+                                    onError?.Invoke("Empty response from LLM");
+                                });
+                                return;
+                            }
+
+                            var choice = response.Choices[0];
+                            assistantContent = choice.Message.Content;
+
+                            if (choice.Message.ToolCalls != null && choice.Message.ToolCalls.Count > 0)
+                            {
+                                requestMessages.Add(choice.Message);
+                                requestMessages.AddRange(ExecuteToolCallsOnMainThread(choice.Message.ToolCalls));
+                                assistantContent = null;
+                                continue;
+                            }
                         }
 
                         if (!string.IsNullOrEmpty(assistantContent))

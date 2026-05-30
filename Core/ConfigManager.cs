@@ -68,8 +68,8 @@ namespace GiantessLLMMod.Core
             _configFile = config;
             // LLM API
             ApiBaseUrl = config.Bind("LLM API", "ApiBaseUrl",
-                "http://127.0.0.1:1234/v1",
-                "Base URL for the OpenAI-compatible API endpoint");
+                "http://127.0.0.1:1234/v1/chat/completions",
+                "Full URL for the OpenAI-compatible API endpoint (e.g. http://127.0.0.1:11434/v1/chat/completions or http://127.0.0.1:11434/api/generate)");
 
             ApiKey = config.Bind("LLM API", "ApiKey",
                 "",
