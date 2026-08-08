@@ -4,7 +4,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>GiantessLLMMod</AssemblyName>
     <Description>LLM-powered AI controller for Giantess Sandbox</Description>
-    <Version>0.0.4</Version>
+    <Version>0.0.5</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -46,6 +46,10 @@
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>libs\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="llm_system_prompt.conf" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

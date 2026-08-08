@@ -28,13 +28,16 @@ jobs:
         run: |
           mkdir -p dist
           cp bin/Release/net472/GiantessLLMMod.dll dist/
+          cp llm_system_prompt.conf dist/
+          cp install-ollama.bat dist/
+          cp install-ollama.ps1 dist/
           # Optional: Include other necessary files
           # cp README.md dist/
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GiantessLLMMod-${{ github.ref_name }}
+          name: GiantessLLMMod-${{ github.run_id }}
           path: dist/
 
   release:
@@ -48,7 +51,7 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
-          name: GiantessLLMMod-${{ github.ref_name }}
+          name: GiantessLLMMod-${{ github.run_id }}
           path: release_files
 
       - name: Create Zip

@@ -229,21 +229,22 @@ namespace GiantessLLMMod.Core
             try
             {
                 if (!File.Exists(path))
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(path));
-                    File.WriteAllText(path, "# Missing prompt. Put your full prompt in [system_prompt].", Encoding.UTF8);
-                }
+                    throw new FileNotFoundException(
+                        $"System prompt file was not found: {path}. Reinstall llm_system_prompt.conf or correct Prompt.SystemPromptFile.",
+                        path);
 
                 string text = File.ReadAllText(path, Encoding.UTF8);
                 ActionDefinitions.LoadFromPromptConfig(text);
                 string prompt = ParsePromptConfig(text);
-                return string.IsNullOrWhiteSpace(prompt)
-                    ? "Reply only with a valid JSON action object."
-                    : prompt;
+                if (string.IsNullOrWhiteSpace(prompt))
+                    throw new InvalidDataException(
+                        $"System prompt file contains no usable [system_prompt] section: {path}");
+
+                return prompt;
             }
-            catch
+            catch (Exception ex) when (!(ex is InvalidDataException) && !(ex is FileNotFoundException))
             {
-                return "Reply only with a valid JSON action object.";
+                throw new InvalidDataException($"Failed to load system prompt file '{path}': {ex.Message}", ex);
             }
         }
 

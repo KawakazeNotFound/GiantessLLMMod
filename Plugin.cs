@@ -21,7 +21,7 @@ namespace GiantessLLMMod
     {
         public const string PLUGIN_GUID = "com.giantess.llmmod";
         public const string PLUGIN_NAME = "Giantess LLM Mod";
-        public const string PLUGIN_VERSION = "0.0.4";
+        public const string PLUGIN_VERSION = "0.0.5";
 
         // Core systems
         private ConfigManager _config;
@@ -259,7 +259,14 @@ namespace GiantessLLMMod
 
         private void HandleLLMResponse(LLMActionResponse response)
         {
-            if (response == null) return;
+            if (response == null)
+            {
+                const string error = "LLM callback returned a null response.";
+                _ui.AddLog($"LLM Error: {error}");
+                _ui.AddChatEntry("System", $"Error: {error}", Color.red);
+                Logger.LogError(error);
+                return;
+            }
 
             // Log to UI
             string actionDesc = $"[{response.Emotion}] {response.Action}";

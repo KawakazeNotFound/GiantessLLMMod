@@ -49,6 +49,26 @@ namespace GiantessLLMMod.Models
             { "place_on_surface", "Pick up the player if needed, move to a named scene surface, and place the player there" },
         };
 
+        // Keep this list aligned with ActionExecutor.ExecuteAction. Prompt files may
+        // customize the advertised whitelist, but they must not be able to make an
+        // unimplemented action (for example "speak") pass response validation.
+        private static readonly HashSet<string> ExecutableActions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "idle", "face_player", "walk_to_player", "follow_player", "pick_up",
+            "eat", "put_in_mouth", "swallow", "take_out_mouth", "pat_stomach",
+            "tease_mouth", "tease_stomach", "drop", "dangle", "dangle_drop",
+            "burp", "put_on_stomach", "lick", "put_in_bra", "invite_into_mouth",
+            "play_with_food", "lay_down", "stand_up", "place_on_surface",
+            "look_around", "roam", "random_tease", "mouth_activity",
+            "lower_into_mouth", "fly_into_mouth", "poke_player", "take_off_stomach",
+            "watch_stomach", "crawl_begin", "hover_foot"
+        };
+
+        public static bool IsExecutableAction(string action)
+        {
+            return !string.IsNullOrWhiteSpace(action) && ExecutableActions.Contains(action);
+        }
+
         /// <summary>
         /// Emotion mappings → (EyesFlexType, MouthFlexType).
         /// Uses exact enum names from probe data.
