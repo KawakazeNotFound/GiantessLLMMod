@@ -48,4 +48,8 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="llm_system_prompt.conf" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

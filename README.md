@@ -34,6 +34,8 @@
 2. Download the latest release and place the `GiantessLLMMod.dll` into the `BepInEx/plugins` folder.
 3. Ensure `Newtonsoft.Json.dll` is available (usually comes with BepInEx or the game).
 4. Launch the game once to generate the configuration file.
+**Zero-setup option:** Run `install-ollama.bat` (included in the release) from the game folder — it auto-installs Ollama, detects your GPU VRAM to recommend a model (qwen/gemma small variants), tests the API, and writes the mod config. It will not download a model unless you press Y when asked.
+
 
 ### ⚙️ Configuration
 
@@ -79,6 +81,14 @@ Press the **F8** key (default) in-game to open the Mod Overlay.
 
 ### 🛠️ 详细安装教程
 
+#### 零基础：自动安装 Ollama 并配置（推荐小白使用）
+
+如果你对电脑不熟悉，直接用一键脚本（`install-ollama.bat` + `install-ollama.ps1`）：
+
+1. 把两个文件放到游戏根目录（含 `GiantessSandbox.exe` 的文件夹），双击 `install-ollama.bat`。
+2. 脚本会自动：下载安装 Ollama → 启动本地服务 → 读取你的显卡显存并推荐合适的模型（qwen / gemma 小参数版）→ 测试接口 → 把接口地址和推荐模型写入模组配置。
+3. 脚本**不会自动下载模型**；按提示按 Y 才会下载（几 GB）。下载完成后启动游戏按 F8 即可使用。
+4. 想换模型：运行 `install-ollama.ps1 -ForceModel qwen2.5:3b`（或 `gemma3:4b` 等）。
 #### 第一步：安装 BepInEx (插件运行框架)
 如果你已经安装过 BepInEx，请直接跳到第二步。
 1.  **下载：** 前往 [BepInEx GitHub 发布页](https://github.com/BepInEx/BepInEx/releases)，下载 **BepInEx_x64_5.4.x.x.zip** (适用于 64 位游戏)。

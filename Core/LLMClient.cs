@@ -8,6 +8,7 @@ using System.Threading;
 using BepInEx.Logging;
 using GiantessLLMMod.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace GiantessLLMMod.Core
 {
@@ -75,9 +76,22 @@ namespace GiantessLLMMod.Core
             // Build the user message from game state
             string userContent = FormatGameStateForLLM(state);
 
+            string systemPrompt;
+            try
+            {
+                systemPrompt = _config.GetSystemPrompt();
+            }
+            catch (Exception ex)
+            {
+                string error = $"LLM prompt configuration error: {ex.Message}";
+                _log.LogError(error);
+                onError?.Invoke(error);
+                return;
+            }
+
             // Build messages array
             var messages = new List<ChatMessage>();
-            messages.Add(new ChatMessage("system", _config.GetSystemPrompt()));
+            messages.Add(new ChatMessage("system", systemPrompt));
 
             lock (_historyLock)
             {
@@ -93,6 +107,7 @@ namespace GiantessLLMMod.Core
                 {
                     string assistantContent = null;
                     LLMActionResponse actionResponse = null;
+                    string lastValidationError = "The model did not return a response.";
                     var requestMessages = new List<ChatMessage>(messages);
                     const int maxToolRounds = 3;
 
@@ -154,18 +169,17 @@ namespace GiantessLLMMod.Core
                             _config.ApiTimeoutMs.Value
                         );
 
+                        if (string.IsNullOrWhiteSpace(responseJson))
+                            throw new InvalidDataException("LLM API returned HTTP success with an empty response body.");
+
+                        if (_config.DebugLogging.Value)
+                            _log.LogInfo($"LLM response received: round={round + 1}, bytes={Encoding.UTF8.GetByteCount(responseJson)}");
+
                         if (isOllamaGenerate)
                         {
                             var response = JsonConvert.DeserializeObject<OllamaGenerateResponse>(responseJson);
-                            if (string.IsNullOrEmpty(response?.Response))
-                            {
-                                EnqueueMainThread(() =>
-                                {
-                                    _isBusy = false;
-                                    onError?.Invoke("Empty response from Ollama API");
-                                });
-                                return;
-                            }
+                            if (string.IsNullOrWhiteSpace(response?.Response))
+                                throw new InvalidDataException("Ollama returned a response object, but its 'response' text was empty.");
                             assistantContent = response.Response;
                         }
                         else
@@ -182,35 +196,52 @@ namespace GiantessLLMMod.Core
                             }
 
                             var choice = response.Choices[0];
+                            if (choice == null)
+                                throw new InvalidDataException("LLM response choices[0] was null.");
+                            if (choice.Message == null)
+                                throw new InvalidDataException("LLM response choices[0].message was missing.");
+
                             assistantContent = choice.Message.Content;
 
                             if (choice.Message.ToolCalls != null && choice.Message.ToolCalls.Count > 0)
                             {
+                                if (round >= maxToolRounds)
+                                    throw new InvalidDataException($"LLM exceeded the tool-call limit ({maxToolRounds}) without returning a final text response.");
+
                                 requestMessages.Add(choice.Message);
                                 requestMessages.AddRange(ExecuteToolCallsOnMainThread(choice.Message.ToolCalls));
                                 assistantContent = null;
                                 continue;
                             }
-                        }
 
-                        if (!string.IsNullOrEmpty(assistantContent))
-                        {
-                            actionResponse = ParseActionResponse(assistantContent, normalizeInvalid: false);
-                            if (IsValidActionResponse(actionResponse))
+                            if (string.IsNullOrWhiteSpace(assistantContent))
                             {
-                                NormalizeActionResponse(actionResponse);
-                                break;
+                                string finish = string.IsNullOrWhiteSpace(choice.FinishReason) ? "not provided" : choice.FinishReason;
+                                throw new InvalidDataException($"LLM returned no message content (finish_reason={finish}).");
                             }
                         }
+
+                        if (TryParseActionResponse(assistantContent, out actionResponse, out lastValidationError)
+                            && TryValidateActionResponse(actionResponse, !string.IsNullOrWhiteSpace(state?.PlayerInput), out lastValidationError))
+                        {
+                            NormalizeActionResponse(actionResponse);
+                            break;
+                        }
+
+                        _log.LogWarning($"Rejected LLM response (round {round + 1}/{maxToolRounds + 1}): {lastValidationError}");
+
+                        // Make retries corrective instead of sending the same request repeatedly.
+                        requestMessages.Add(new ChatMessage("assistant", assistantContent));
+                        requestMessages.Add(new ChatMessage("user",
+                            $"Your previous response was invalid: {lastValidationError} " +
+                            "Return exactly one JSON object with action, emotion, dialogue, ask, and parameters. " +
+                            "Put spoken text in dialogue; 'speak' is not an action."));
+                        actionResponse = null;
                     }
 
                     if (actionResponse == null)
-                        actionResponse = new LLMActionResponse
-                        {
-                            Action = "face_player",
-                            Emotion = "curious",
-                            Dialogue = null
-                        };
+                        throw new InvalidDataException(
+                            $"LLM returned no usable response after {maxToolRounds + 1} attempts. Last validation error: {lastValidationError}");
 
                     // Update conversation history
                     lock (_historyLock)
@@ -360,12 +391,16 @@ namespace GiantessLLMMod.Core
 
         // ──────────────────── Response Parsing ────────────────────
 
-        private LLMActionResponse ParseActionResponse(string rawContent, bool normalizeInvalid = true)
+        private bool TryParseActionResponse(string rawContent, out LLMActionResponse response, out string error)
         {
+            response = null;
+            error = null;
+
             if (string.IsNullOrWhiteSpace(rawContent))
-                return normalizeInvalid
-                    ? new LLMActionResponse { Action = "idle", Emotion = "neutral" }
-                    : null;
+            {
+                error = "Assistant content was empty.";
+                return false;
+            }
 
             // Strip markdown code fences if present
             string json = rawContent.Trim();
@@ -385,29 +420,62 @@ namespace GiantessLLMMod.Core
 
             try
             {
-                var response = JsonConvert.DeserializeObject<LLMActionResponse>(json);
-                if (response != null)
+                var obj = JObject.Parse(json);
+                var actionToken = obj["action"];
+                if (actionToken == null || actionToken.Type != JTokenType.String || string.IsNullOrWhiteSpace((string)actionToken))
                 {
-                    if (normalizeInvalid)
-                        NormalizeActionResponse(response);
-                    return response;
+                    error = "Required string field 'action' was missing or empty.";
+                    return false;
                 }
+
+                response = obj.ToObject<LLMActionResponse>();
+                if (response == null)
+                {
+                    error = "JSON object could not be converted to an action response.";
+                    return false;
+                }
+
+                return true;
             }
             catch (JsonException ex)
             {
                 _log.LogWarning($"Failed to parse LLM JSON: {ex.Message}");
+                error = $"Invalid JSON: {ex.Message}";
+                return false;
             }
-
-            if (!normalizeInvalid) return null;
-
-            return new LLMActionResponse { Action = "face_player", Emotion = "curious", Dialogue = null };
         }
 
-        private bool IsValidActionResponse(LLMActionResponse response)
+        private bool TryValidateActionResponse(LLMActionResponse response, bool playerAskedForReply, out string error)
         {
-            return response != null
-                && !string.IsNullOrEmpty(response.Action)
-                && ActionDefinitions.AvailableActions.ContainsKey(response.Action);
+            error = null;
+
+            if (response == null)
+            {
+                error = "Parsed response was null.";
+                return false;
+            }
+
+            if (!ActionDefinitions.AvailableActions.ContainsKey(response.Action))
+            {
+                error = $"Unknown action '{response.Action}'. It is not in the configured action whitelist.";
+                return false;
+            }
+
+            if (!ActionDefinitions.IsExecutableAction(response.Action))
+            {
+                error = $"Unsupported action '{response.Action}'. The game executor has no implementation for it.";
+                return false;
+            }
+
+            if (playerAskedForReply
+                && string.IsNullOrWhiteSpace(response.Dialogue)
+                && (response.Ask == null || string.IsNullOrWhiteSpace(response.Ask.Question)))
+            {
+                error = "Player input received, but both 'dialogue' and 'ask.question' were empty.";
+                return false;
+            }
+
+            return true;
         }
 
         private void NormalizeActionResponse(LLMActionResponse response)
