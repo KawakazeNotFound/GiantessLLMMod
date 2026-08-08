@@ -5,6 +5,7 @@ using System.Reflection;
 using BepInEx.Logging;
 using GiantessLLMMod.Models;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace GiantessLLMMod.Core
 {
@@ -26,6 +27,28 @@ namespace GiantessLLMMod.Core
         private Type _personalityType;
         private Type _stomachType;
         private Type _entityMemoryType;
+        private Type _reimuType;
+        private Type _firstPersonAioType;
+        private Type _mouthTriggerType;
+
+        // Scene-local object registry. Unity discovery APIs are intentionally kept
+        // out of recurring snapshot/event paths and are rerun only after a scene change.
+        private int _cachedSceneHandle = int.MinValue;
+        private MonoBehaviour _cachedFps;
+        private MonoBehaviour _cachedReimu;
+        private MonoBehaviour _cachedFirstPersonAio;
+        private MonoBehaviour[] _cachedGiantessAIs = Array.Empty<MonoBehaviour>();
+        private MonoBehaviour[] _cachedMouthTriggers = Array.Empty<MonoBehaviour>();
+        private readonly List<SceneColliderEntry> _sceneColliderEntries = new List<SceneColliderEntry>();
+        private float _nextMissingObjectRetryTime;
+
+        private sealed class SceneColliderEntry
+        {
+            public Collider Collider;
+            public int RootId;
+            public string Name;
+            public string Kind;
+        }
 
         // Cached field/method info
         private bool _cacheBuilt = false;
@@ -142,6 +165,9 @@ namespace GiantessLLMMod.Core
                 _personalityType = FindType("GiantessPersonality");
                 _stomachType = FindType("StomachLogic");
                 _entityMemoryType = FindType("EntityMemory");
+                _reimuType = FindType("ReimuAnimationController");
+                _firstPersonAioType = FindType("FirstPersonAIO");
+                _mouthTriggerType = FindType("MouthTrigger");
 
                 if (_giantessAIType != null)
                     CacheGiantessFields();
@@ -155,6 +181,7 @@ namespace GiantessLLMMod.Core
                     CacheEntityMemoryFields();
 
                 _cacheBuilt = true;
+                RefreshSceneCache(force: true);
                 _log.LogInfo($"Reflection cache built. GiantessAI={_giantessAIType != null}, FPS={_fpsType != null}, Digest={_digestType != null}");
                 return true;
             }
@@ -168,13 +195,15 @@ namespace GiantessLLMMod.Core
         /// <summary>
         /// Collect a full game state snapshot.
         /// </summary>
-        public GameStateSnapshot CollectState()
+        public GameStateSnapshot CollectState(bool includeSceneObjects = true)
         {
             if (!_cacheBuilt)
             {
                 BuildCache();
                 if (!_cacheBuilt) return null;
             }
+
+            RefreshSceneCache();
 
             var snapshot = new GameStateSnapshot
             {
@@ -186,9 +215,26 @@ namespace GiantessLLMMod.Core
 
             // Collect all giantess data
             snapshot.Giantesses = CollectGiantessStates(snapshot.Player);
-            snapshot.SceneObjects = CollectSceneObjectCandidates(snapshot.Player);
+            if (includeSceneObjects)
+                snapshot.SceneObjects = CollectSceneObjectCandidates(snapshot.Player);
 
             return snapshot;
+        }
+
+        /// <summary>
+        /// Collect only player flags required by EventWatcher. This deliberately
+        /// excludes giantess snapshots, scene candidates, sorting and trend samples.
+        /// </summary>
+        public PlayerState CollectEventPlayerState()
+        {
+            if (!_cacheBuilt)
+            {
+                BuildCache();
+                if (!_cacheBuilt) return null;
+            }
+
+            RefreshSceneCache();
+            return CollectPlayerState();
         }
 
         // ──────────────────── Player ────────────────────
@@ -201,11 +247,7 @@ namespace GiantessLLMMod.Core
             {
                 // Prefer FPSBehaviour. The tagged player object is not always the object
                 // that owns ReimuAnimationController/FPS fields.
-                MonoBehaviour fpsMb = null;
-                if (_fpsType != null)
-                {
-                    fpsMb = UnityEngine.Object.FindObjectOfType(_fpsType) as MonoBehaviour;
-                }
+                MonoBehaviour fpsMb = _cachedFps;
 
                 GameObject playerObj = fpsMb != null
                     ? fpsMb.gameObject
@@ -253,18 +295,13 @@ namespace GiantessLLMMod.Core
                         state.IsBeingHeld = GetFieldByName<bool>(fps, "isGrabbed");
 
                         // Check ReimuAnimationController for mouth/held state
-                        var reimuType = FindType("ReimuAnimationController");
-                        if (reimuType != null)
+                        if (_reimuType != null)
                         {
-                            var reimu = playerObj.GetComponentInChildren(reimuType);
+                            var reimu = _cachedReimu ?? playerObj.GetComponentInChildren(_reimuType);
                             if (reimu == null)
                             {
                                 var reimuProp = fps.GetType().GetProperty("Reimu", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                                 reimu = GetPropertyValue(fps, reimuProp) as MonoBehaviour;
-                            }
-                            if (reimu == null)
-                            {
-                                reimu = UnityEngine.Object.FindObjectOfType(reimuType) as MonoBehaviour;
                             }
                             if (reimu != null)
                             {
@@ -274,11 +311,10 @@ namespace GiantessLLMMod.Core
                         }
 
                         // Check FirstPersonAIO for grounded/sliding state
-                        var fpaType = FindType("FirstPersonAIO");
-                        if (fpaType != null)
+                        if (_firstPersonAioType != null)
                         {
-                            var fpa = playerObj.GetComponent(fpaType);
-                            if (fpa == null) fpa = playerObj.GetComponentInChildren(fpaType);
+                            var fpa = _cachedFirstPersonAio ?? playerObj.GetComponent(_firstPersonAioType);
+                            if (fpa == null) fpa = playerObj.GetComponentInChildren(_firstPersonAioType);
                             if (fpa != null)
                             {
                                 state.IsBeingHeld = state.IsBeingHeld || GetFieldByName<bool>(fpa, "isGrabbed");
@@ -304,9 +340,8 @@ namespace GiantessLLMMod.Core
             try
             {
                 var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-                foreach (var aiObj in UnityEngine.Object.FindObjectsOfType(_giantessAIType))
+                foreach (var ai in _cachedGiantessAIs)
                 {
-                    var ai = aiObj as MonoBehaviour;
                     if (ai == null) continue;
 
                     var playerInMouthProp = ai.GetType().GetProperty("playerInMouth", flags)
@@ -334,12 +369,11 @@ namespace GiantessLLMMod.Core
 
         private bool IsPlayerInMouthFromMouthTrigger()
         {
-            var mouthTriggerType = FindType("MouthTrigger");
-            if (mouthTriggerType == null) return false;
+            if (_mouthTriggerType == null) return false;
 
             try
             {
-                foreach (var trigger in UnityEngine.Object.FindObjectsOfType(mouthTriggerType))
+                foreach (var trigger in _cachedMouthTriggers)
                 {
                     if (GetFieldByName<bool>(trigger, "m_IsPlayerInMouth"))
                         return true;
@@ -363,12 +397,11 @@ namespace GiantessLLMMod.Core
 
             try
             {
-                var allAIs = UnityEngine.Object.FindObjectsOfType(_giantessAIType);
-                foreach (var aiObj in allAIs)
+                foreach (var ai in _cachedGiantessAIs)
                 {
                     try
                     {
-                        var gs = CollectSingleGiantess(aiObj as MonoBehaviour, player);
+                        var gs = CollectSingleGiantess(ai, player);
                         if (gs != null) list.Add(gs);
                     }
                     catch (Exception ex)
@@ -489,9 +522,9 @@ namespace GiantessLLMMod.Core
             try
             {
                 var playerPos = new Vector3(player.X, player.Y, player.Z);
-                var seen = new HashSet<int>();
-                foreach (var col in UnityEngine.Object.FindObjectsOfType<Collider>())
+                foreach (var entry in _sceneColliderEntries)
                 {
+                    var col = entry.Collider;
                     if (col == null || !col.enabled || col.isTrigger)
                         continue;
 
@@ -499,28 +532,15 @@ namespace GiantessLLMMod.Core
                     if (go == null || !go.activeInHierarchy)
                         continue;
 
-                    if (go.GetComponentInParent(_giantessAIType) != null || go.GetComponentInParent(_fpsType) != null)
-                        continue;
-
-                    string name = GetHierarchyName(go);
-                    string kind = ClassifySceneObject(name);
-                    if (kind == null)
-                        continue;
-
                     Bounds b = col.bounds;
                     if (b.size.x < 0.5f || b.size.z < 0.5f || b.size.y < 0.03f)
                         continue;
 
-                    int rootId = go.transform.root.gameObject.GetInstanceID();
-                    int idKey = rootId ^ kind.GetHashCode();
-                    if (!seen.Add(idKey))
-                        continue;
-
                     candidates.Add(new SceneObjectCandidate
                     {
-                        Id = $"{kind}:{rootId}",
-                        Name = name,
-                        Kind = kind,
+                        Id = $"{entry.Kind}:{entry.RootId}",
+                        Name = entry.Name,
+                        Kind = entry.Kind,
                         X = b.center.x,
                         Y = b.center.y,
                         Z = b.center.z,
@@ -542,6 +562,100 @@ namespace GiantessLLMMod.Core
                 .ThenBy(c => c.DistanceToPlayer)
                 .Take(_config?.MaxSceneObjects.Value ?? 16)
                 .ToList();
+        }
+
+        /// <summary>
+        /// Rebuild references and the classified collider index once per Unity scene.
+        /// Missing gameplay objects get a low-frequency retry because some scenes spawn
+        /// them shortly after sceneLoaded.
+        /// </summary>
+        private void RefreshSceneCache(bool force = false)
+        {
+            int sceneHandle = SceneManager.GetActiveScene().handle;
+            bool sceneChanged = sceneHandle != _cachedSceneHandle;
+            bool missingGameplayObjects = _cachedFps == null ||
+                (_giantessAIType != null && _cachedGiantessAIs.All(ai => ai == null));
+
+            if (!force && !sceneChanged)
+            {
+                if (!missingGameplayObjects || Time.unscaledTime < _nextMissingObjectRetryTime)
+                    return;
+            }
+
+            _cachedSceneHandle = sceneHandle;
+            _nextMissingObjectRetryTime = Time.unscaledTime + 1f;
+
+            _cachedFps = _fpsType == null
+                ? null
+                : UnityEngine.Object.FindObjectOfType(_fpsType) as MonoBehaviour;
+            _cachedReimu = _reimuType == null
+                ? null
+                : UnityEngine.Object.FindObjectOfType(_reimuType) as MonoBehaviour;
+            _cachedFirstPersonAio = _firstPersonAioType == null
+                ? null
+                : UnityEngine.Object.FindObjectOfType(_firstPersonAioType) as MonoBehaviour;
+            _cachedGiantessAIs = FindMonoBehaviours(_giantessAIType);
+            _cachedMouthTriggers = FindMonoBehaviours(_mouthTriggerType);
+
+            if (force || sceneChanged)
+                RebuildSceneColliderIndex();
+        }
+
+        private MonoBehaviour[] FindMonoBehaviours(Type type)
+        {
+            if (type == null) return Array.Empty<MonoBehaviour>();
+
+            return UnityEngine.Object.FindObjectsOfType(type)
+                .OfType<MonoBehaviour>()
+                .ToArray();
+        }
+
+        private void RebuildSceneColliderIndex()
+        {
+            _sceneColliderEntries.Clear();
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+
+            try
+            {
+                foreach (var col in UnityEngine.Object.FindObjectsOfType<Collider>())
+                {
+                    if (col == null || !col.enabled || col.isTrigger)
+                        continue;
+
+                    var go = col.gameObject;
+                    if (go == null || !go.activeInHierarchy)
+                        continue;
+
+                    if ((_giantessAIType != null && go.GetComponentInParent(_giantessAIType) != null) ||
+                        (_fpsType != null && go.GetComponentInParent(_fpsType) != null))
+                        continue;
+
+                    string name = GetHierarchyName(go);
+                    string kind = ClassifySceneObject(name);
+                    if (kind == null)
+                        continue;
+
+                    Bounds b = col.bounds;
+                    if (b.size.x < 0.5f || b.size.z < 0.5f || b.size.y < 0.03f)
+                        continue;
+
+                    int rootId = go.transform.root.gameObject.GetInstanceID();
+                    if (!seen.Add(kind + ":" + rootId))
+                        continue;
+
+                    _sceneColliderEntries.Add(new SceneColliderEntry
+                    {
+                        Collider = col,
+                        RootId = rootId,
+                        Name = name,
+                        Kind = kind
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning($"Error indexing scene objects: {ex.Message}");
+            }
         }
 
         private string GetHierarchyName(GameObject go)
@@ -945,9 +1059,8 @@ namespace GiantessLLMMod.Core
         {
             if (_giantessAIType == null) return null;
 
-            var all = UnityEngine.Object.FindObjectsOfType(_giantessAIType)
-                .OfType<MonoBehaviour>()
-                .ToList();
+            RefreshSceneCache();
+            var all = _cachedGiantessAIs.Where(ai => ai != null).ToList();
             if (all.Count == 0) return null;
 
             var player = CollectPlayerState();

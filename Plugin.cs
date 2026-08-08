@@ -37,6 +37,8 @@ namespace GiantessLLMMod
         private bool _initialized = false;
         private bool _releaseOverlayInputOnMouseUp = false;
         private GameStateSnapshot _lastSnapshot;
+        private float _nextUiSnapshotTime = 0f;
+        private float _nextEventPollTime = 0f;
 
         private void Awake()
         {
@@ -116,12 +118,23 @@ namespace GiantessLLMMod
 
             if (!_initialized) return;
 
-            // Collect state periodically for UI and events
-            _lastSnapshot = _collector.CollectState();
-            if (_lastSnapshot != null)
+            // A full snapshot is expensive (scene discovery, reflection and sorting),
+            // so never run it from the per-frame path. The overlay only needs a
+            // reduced snapshot at a human-readable refresh rate.
+            if (_ui.Visible && Time.unscaledTime >= _nextUiSnapshotTime)
             {
-                _ui.SetLastState(_lastSnapshot);
-                _eventWatcher.Update(_lastSnapshot);
+                _nextUiSnapshotTime = Time.unscaledTime + Mathf.Max(0.10f, _config.UiSnapshotInterval.Value);
+                _lastSnapshot = _collector.CollectState(includeSceneObjects: false);
+                if (_lastSnapshot != null)
+                    _ui.SetLastState(_lastSnapshot);
+            }
+
+            // Event detection only needs player transition flags. Skip even this
+            // lightweight poll when automatic event triggering is disabled.
+            if (_config.EventTriggerEnabled.Value && Time.unscaledTime >= _nextEventPollTime)
+            {
+                _nextEventPollTime = Time.unscaledTime + Mathf.Max(0.05f, _config.EventPollInterval.Value);
+                _eventWatcher.UpdatePlayer(_collector.CollectEventPlayerState());
             }
 
             // Automatic triggers

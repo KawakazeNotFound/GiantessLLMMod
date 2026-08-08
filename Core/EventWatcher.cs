@@ -29,7 +29,27 @@ namespace GiantessLLMMod.Core
         {
             if (current?.Player == null) return;
 
-            var p = current.Player;
+            UpdatePlayer(current.Player);
+
+            // Check giantess state changes
+            foreach (var g in current.Giantesses)
+            {
+                string key = g.Name ?? "Unknown";
+                if (_prevGiantessState.TryGetValue(key, out string prevState))
+                {
+                    // Script/action state changes are often caused by the LLM action itself.
+                    // Treating them as events creates a feedback loop of repeated LLM calls.
+                }
+                _prevGiantessState[key] = g.CurrentState;
+            }
+        }
+
+        /// <summary>
+        /// Compare only the inexpensive player flags needed for automatic events.
+        /// </summary>
+        public void UpdatePlayer(PlayerState p)
+        {
+            if (p == null) return;
 
             if (_prevPlayer != null)
             {
@@ -59,18 +79,6 @@ namespace GiantessLLMMod.Core
 
                 // Death/revive can flicker while entering a scene, so do not use it as
                 // an automatic LLM event.
-            }
-
-            // Check giantess state changes
-            foreach (var g in current.Giantesses)
-            {
-                string key = g.Name ?? "Unknown";
-                if (_prevGiantessState.TryGetValue(key, out string prevState))
-                {
-                    // Script/action state changes are often caused by the LLM action itself.
-                    // Treating them as events creates a feedback loop of repeated LLM calls.
-                }
-                _prevGiantessState[key] = g.CurrentState;
             }
 
             // Save current as previous

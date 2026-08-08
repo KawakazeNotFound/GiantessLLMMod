@@ -46,6 +46,8 @@ namespace GiantessLLMMod.Core
         public ConfigEntry<string> BedKeywords;
         public ConfigEntry<float> TrendThreshold;
         public ConfigEntry<float> EmotionBlendTime;
+        public ConfigEntry<float> UiSnapshotInterval;
+        public ConfigEntry<float> EventPollInterval;
         public ConfigEntry<int> ApiTimeoutMs;
 
         // ─── Keys ───
@@ -172,6 +174,14 @@ namespace GiantessLLMMod.Core
             EmotionBlendTime = config.Bind("Reflection", "EmotionBlendTime",
                 0.25f,
                 "Seconds to blend facial expressions.");
+
+            UiSnapshotInterval = config.Bind("Reflection", "UiSnapshotInterval",
+                0.25f,
+                "Seconds between reduced state snapshots while the overlay is visible.");
+
+            EventPollInterval = config.Bind("Reflection", "EventPollInterval",
+                0.10f,
+                "Seconds between lightweight player-state polls while event triggering is enabled.");
 
             ApiTimeoutMs = config.Bind("LLM API", "ApiTimeoutMs",
                 45000,
