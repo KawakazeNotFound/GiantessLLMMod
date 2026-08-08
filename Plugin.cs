@@ -21,7 +21,7 @@ namespace GiantessLLMMod
     {
         public const string PLUGIN_GUID = "com.giantess.llmmod";
         public const string PLUGIN_NAME = "Giantess LLM Mod";
-        public const string PLUGIN_VERSION = "0.0.4";
+        public const string PLUGIN_VERSION = "0.0.5";
 
         // Core systems
         private ConfigManager _config;

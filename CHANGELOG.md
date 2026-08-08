@@ -1,5 +1,29 @@
 # Changelog
 
+## [v0.0.5] - 2026-08-08
+
+### Added
+- Added a complete `llm_system_prompt.conf` to build and release artifacts.
+- Added an Ollama setup assistant (`install-ollama.bat` and `install-ollama.ps1`) that detects local GPU memory, recommends a model, tests the API, and writes the mod configuration.
+- Added explicit validation errors for empty HTTP bodies, missing response messages, empty model content, malformed JSON, missing actions, unknown actions, unsupported executor actions, incomplete tool-call loops, and null callbacks.
+- Added corrective retries that tell the model exactly why its previous structured response was rejected.
+
+### Changed
+- Player chat requests now require either non-empty `dialogue` text or a complete `ask.question`; action-only replies are rejected instead of appearing to succeed silently.
+- Prompt-defined action whitelists are now checked against actions actually implemented by `ActionExecutor`, preventing invented actions such as `speak` from reaching execution.
+- Missing or empty prompt files now produce visible configuration errors instead of silently falling back to an underspecified prompt.
+- Release artifacts now use the GitHub Actions run ID as their name so builds from branches containing `/` upload correctly.
+
+### Fixed
+- Fixed successful API responses producing no visible chat text when the model omitted `dialogue`.
+- Fixed invalid structured responses silently degrading to `face_player` with `dialogue: null`.
+- Fixed release packages omitting the system prompt required for reliable structured output.
+
+### Verification
+- Built `GiantessLLMMod` in Release configuration with zero warnings and zero errors.
+- Verified the prompt file is copied beside the compiled DLL.
+- Verified the GitHub Actions build, artifact preparation, and artifact upload jobs complete successfully.
+
 ## [v0.0.4] - 2026-05-30
 
 ### Changed

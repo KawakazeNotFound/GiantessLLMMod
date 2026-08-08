@@ -1,5 +1,7 @@
 # Giantess LLM Mod
 
+Current release: **v0.0.5**
+
 [English](#english) | [中文](#中文)
 
 ---
@@ -31,9 +33,10 @@
 ### 🛠️ Installation
 
 1. Ensure you have **BepInEx 5** installed in your game directory.
-2. Download the latest release and place the `GiantessLLMMod.dll` into the `BepInEx/plugins` folder.
-3. Ensure `Newtonsoft.Json.dll` is available (usually comes with BepInEx or the game).
-4. Launch the game once to generate the configuration file.
+2. Download the latest release and place `GiantessLLMMod.dll` and `llm_system_prompt.conf` together in `BepInEx/plugins/GiantessLLMMod`.
+3. Keep `install-ollama.bat` and `install-ollama.ps1` in the game root if you want the automatic local-model setup.
+4. Ensure `Newtonsoft.Json.dll` is available (usually comes with BepInEx or the game).
+5. Launch the game once to generate the configuration file.
 **Zero-setup option:** Run `install-ollama.bat` (included in the release) from the game folder — it auto-installs Ollama, detects your GPU VRAM to recommend a model (qwen/gemma small variants), tests the API, and writes the mod config. It will not download a model unless you press Y when asked.
 
 
@@ -46,6 +49,7 @@ Press the **F8** key (default) in-game to open the Mod Overlay.
   * **To use Ollama native format:** Set URL ending with `/api/generate` (e.g., `http://127.0.0.1:11434/api/generate`). The mod will auto-detect this and switch to Ollama's native prompt format.
 * **Triggers:** Enable/Disable timed triggers or event-based triggers.
 * **Prompts:** Customize the system prompt to define the personality of the giantesses.
+* **Response diagnostics:** Invalid, empty, unsupported, or action-only chat responses are reported in the Chat/System view and `BepInEx/LogOutput.log` instead of failing silently.
 
 ### ⌨️ Keybinds (Default)
 
@@ -97,10 +101,11 @@ Press the **F8** key (default) in-game to open the Mod Overlay.
 4.  **激活：** 运行一次游戏。看到游戏主界面后直接退出即可。此时游戏目录下会自动生成 `BepInEx/plugins` 等文件夹。
 
 #### 第二步：安装本模组
-1.  **下载：** 下载本模组的最新压缩包。
+1.  **下载：** 下载本模组的最新压缩包（当前版本 **v0.0.5**）。
 2.  **放置文件：**
-    *   进入游戏目录下的 `BepInEx/plugins` 文件夹。
-    *   将 `GiantessLLMMod.dll` 放入 `plugins` 文件夹内。
+    *   进入游戏目录下的 `BepInEx/plugins/GiantessLLMMod` 文件夹。
+    *   将 `GiantessLLMMod.dll` 与 `llm_system_prompt.conf` 一起放入该文件夹。
+    *   如需一键配置本地模型，将 `install-ollama.bat` 和 `install-ollama.ps1` 放到游戏根目录。
     *   确保文件夹内（或游戏自带库里）有 `Newtonsoft.Json.dll` 文件。
 3.  **检查：** 启动游戏。如果安装成功，在游戏中按下 **F8** 键会弹出模组的悬浮窗口。
 
@@ -120,6 +125,7 @@ Press the **F8** key (default) in-game to open the Mod Overlay.
   * **使用 Ollama 原生格式：** 将接口地址设置为以 `/api/generate` 结尾（如 `http://127.0.0.1:11434/api/generate`）。模组会自动检测并切换到 Ollama 原生的提问格式。
 * **触发器：** 开启/关闭定时触发或事件驱动触发。
 * **提示词：** 自定义系统提示词 (System Prompt) 以定义女巨人的个性。
+* **响应诊断：** 空响应、错误 JSON、未知动作或聊天回复缺少文字时，会在 Chat/System 和 `BepInEx/LogOutput.log` 中显示具体错误，不再静默无输出。
 
 ### 🚀 CI/CD & Development
 
