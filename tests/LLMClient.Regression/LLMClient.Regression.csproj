@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <NoWarn>$(NoWarn);SYSLIB0014</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../Core/LLMClient.cs" Link="Production/LLMClient.cs" />
+    <Compile Include="../../Core/ChatRequestBuilder.cs" Link="Production/ChatRequestBuilder.cs" />
+    <Compile Include="../../Models/LLMModels.cs" Link="Production/LLMModels.cs" />
+    <Compile Include="../../Models/GameState.cs" Link="Production/GameState.cs" />
+    <Compile Include="../../Models/ActionDefinitions.cs" Link="Production/ActionDefinitions.cs" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>../../libs/Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

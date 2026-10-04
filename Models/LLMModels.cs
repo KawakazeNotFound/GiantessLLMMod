@@ -9,8 +9,10 @@ namespace GiantessLLMMod.Models
     {
         [JsonProperty("model")] public string Model;
         [JsonProperty("messages")] public List<ChatMessage> Messages;
-        [JsonProperty("temperature")] public float Temperature;
-        [JsonProperty("max_tokens")] public int MaxTokens;
+        [JsonProperty("temperature", NullValueHandling = NullValueHandling.Ignore)] public float? Temperature;
+        [JsonProperty("max_tokens", NullValueHandling = NullValueHandling.Ignore)] public int? MaxTokens;
+        [JsonProperty("max_completion_tokens", NullValueHandling = NullValueHandling.Ignore)] public int? MaxCompletionTokens;
+        [JsonProperty("reasoning_effort", NullValueHandling = NullValueHandling.Ignore)] public string ReasoningEffort;
         [JsonProperty("tools")] public List<ToolDefinition> Tools;
         [JsonProperty("tool_choice")] public object ToolChoice;
     }

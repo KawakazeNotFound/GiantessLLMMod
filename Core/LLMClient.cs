@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using BepInEx.Logging;
 using GiantessLLMMod.Models;
 using Newtonsoft.Json;
@@ -22,13 +23,14 @@ namespace GiantessLLMMod.Core
         private readonly ConfigManager _config;
         private readonly List<ChatMessage> _history = new List<ChatMessage>();
         private readonly object _historyLock = new object();
+        private int _historyVersion;
 
         // Thread-safe callback queue for main thread dispatch
         private readonly Queue<Action> _mainThreadQueue = new Queue<Action>();
         private readonly object _queueLock = new object();
 
-        private bool _isBusy = false;
-        public bool IsBusy => _isBusy;
+        private int _isBusy;
+        public bool IsBusy => Volatile.Read(ref _isBusy) != 0;
 
         public LLMClient(ManualLogSource log, ConfigManager config)
         {
@@ -41,13 +43,16 @@ namespace GiantessLLMMod.Core
         /// </summary>
         public void ProcessMainThreadCallbacks()
         {
-            lock (_queueLock)
+            int count;
+            lock (_queueLock) count = _mainThreadQueue.Count;
+            // Execute a bounded batch outside the lock so callbacks cannot block
+            // producers or recursively drain an unbounded number of new callbacks.
+            for (int i = 0; i < count; i++)
             {
-                while (_mainThreadQueue.Count > 0)
-                {
-                    try { _mainThreadQueue.Dequeue()?.Invoke(); }
-                    catch (Exception ex) { _log.LogError($"Callback error: {ex}"); }
-                }
+                Action callback;
+                lock (_queueLock) callback = _mainThreadQueue.Dequeue();
+                try { callback?.Invoke(); }
+                catch (Exception ex) { _log.LogError($"Callback error: {ex}"); }
             }
         }
 
@@ -57,7 +62,7 @@ namespace GiantessLLMMod.Core
         /// </summary>
         public void SendRequest(GameStateSnapshot state, Action<LLMActionResponse> onSuccess, Action<string> onError, List<ToolDefinition> tools = null)
         {
-            if (_isBusy)
+            if (Interlocked.CompareExchange(ref _isBusy, 1, 0) != 0)
             {
                 onError?.Invoke("LLM client is busy with a previous request");
                 return;
@@ -66,39 +71,55 @@ namespace GiantessLLMMod.Core
             // Dry run mode
             if (_config.DryRunMode.Value)
             {
-                var dryResponse = GetDryRunResponse(state);
-                onSuccess?.Invoke(dryResponse);
+                try { onSuccess?.Invoke(GetDryRunResponse(state)); }
+                finally { Interlocked.Exchange(ref _isBusy, 0); }
                 return;
             }
 
-            _isBusy = true;
-
-            // Build the user message from game state
-            string userContent = FormatGameStateForLLM(state);
-
+            string userContent;
             string systemPrompt;
+            string apiUrl, apiKey, model, tokenLimitParameter;
+            float temperature;
+            int maxTokens, timeoutMs, maxHistory, historyVersion, maxDialogueLength;
+            bool debugLogging;
+            List<ToolDefinition> requestTools;
+            var messages = new List<ChatMessage>();
             try
             {
+                if (state == null) throw new ArgumentNullException(nameof(state));
+                userContent = FormatGameStateForLLM(state);
                 systemPrompt = _config.GetSystemPrompt();
+                // Freeze settings for the whole transaction. Applying settings in
+                // the overlay must not switch provider/model halfway through tools.
+                apiUrl = (_config.ApiBaseUrl.Value ?? "").Trim();
+                apiKey = NormalizeApiKey(_config.ApiKey.Value);
+                model = _config.ModelName.Value;
+                temperature = _config.Temperature.Value;
+                maxTokens = _config.MaxTokens.Value;
+                tokenLimitParameter = _config.TokenLimitParameter.Value;
+                timeoutMs = Math.Max(1, _config.ApiTimeoutMs.Value);
+                maxHistory = Math.Max(0, _config.MaxConversationHistory.Value);
+                maxHistory -= maxHistory % 2;
+                maxDialogueLength = Math.Max(1, _config.MaxDialogueLength.Value);
+                debugLogging = _config.DebugLogging.Value;
+                requestTools = tools == null ? null : new List<ToolDefinition>(tools);
+                messages.Add(new ChatMessage("system", systemPrompt));
+                lock (_historyLock)
+                {
+                    historyVersion = _historyVersion;
+                    int start = Math.Max(0, _history.Count - maxHistory);
+                    messages.AddRange(_history.GetRange(start, _history.Count - start));
+                }
+                messages.Add(new ChatMessage("user", userContent));
             }
             catch (Exception ex)
             {
-                string error = $"LLM prompt configuration error: {ex.Message}";
+                Interlocked.Exchange(ref _isBusy, 0);
+                string error = $"LLM request preparation error: {ex.Message}";
                 _log.LogError(error);
                 onError?.Invoke(error);
                 return;
             }
-
-            // Build messages array
-            var messages = new List<ChatMessage>();
-            messages.Add(new ChatMessage("system", systemPrompt));
-
-            lock (_historyLock)
-            {
-                messages.AddRange(_history);
-            }
-
-            messages.Add(new ChatMessage("user", userContent));
 
             // Fire off to thread pool
             ThreadPool.QueueUserWorkItem(_ =>
@@ -113,8 +134,6 @@ namespace GiantessLLMMod.Core
 
                     for (int round = 0; round <= maxToolRounds; round++)
                     {
-                        string apiUrl = _config.ApiBaseUrl.Value.Trim();
-                        string apiKey = NormalizeApiKey(_config.ApiKey.Value);
                         bool isOllamaGenerate = apiUrl.EndsWith("/api/generate", StringComparison.OrdinalIgnoreCase);
 
                         string requestJson;
@@ -134,27 +153,21 @@ namespace GiantessLLMMod.Core
                             
                             var ollamaReq = new OllamaGenerateRequest
                             {
-                                Model = _config.ModelName.Value,
+                                Model = model,
                                 Prompt = sb.ToString(),
                                 Stream = false,
                                 Options = new OllamaOptions
                                 {
-                                    Temperature = _config.Temperature.Value,
-                                    NumPredict = _config.MaxTokens.Value
+                                    Temperature = temperature,
+                                    NumPredict = maxTokens
                                 }
                             };
                             requestJson = JsonConvert.SerializeObject(ollamaReq, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
                         }
                         else
                         {
-                            var request = new ChatCompletionRequest
-                            {
-                                Model = _config.ModelName.Value,
-                                Messages = requestMessages,
-                                Temperature = _config.Temperature.Value,
-                                MaxTokens = _config.MaxTokens.Value,
-                                Tools = tools
-                            };
+                            var request = ChatRequestBuilder.Build(apiUrl, model, requestMessages,
+                                temperature, maxTokens, requestTools, tokenLimitParameter);
 
                             requestJson = JsonConvert.SerializeObject(request, new JsonSerializerSettings 
                             { 
@@ -166,13 +179,13 @@ namespace GiantessLLMMod.Core
                             apiUrl,
                             requestJson,
                             apiKey,
-                            _config.ApiTimeoutMs.Value
+                            timeoutMs
                         );
 
                         if (string.IsNullOrWhiteSpace(responseJson))
                             throw new InvalidDataException("LLM API returned HTTP success with an empty response body.");
 
-                        if (_config.DebugLogging.Value)
+                        if (debugLogging)
                             _log.LogInfo($"LLM response received: round={round + 1}, bytes={Encoding.UTF8.GetByteCount(responseJson)}");
 
                         if (isOllamaGenerate)
@@ -189,7 +202,7 @@ namespace GiantessLLMMod.Core
                             {
                                 EnqueueMainThread(() =>
                                 {
-                                    _isBusy = false;
+                                    Interlocked.Exchange(ref _isBusy, 0);
                                     onError?.Invoke("Empty response from LLM");
                                 });
                                 return;
@@ -200,6 +213,9 @@ namespace GiantessLLMMod.Core
                                 throw new InvalidDataException("LLM response choices[0] was null.");
                             if (choice.Message == null)
                                 throw new InvalidDataException("LLM response choices[0].message was missing.");
+
+                            if (choice.FinishReason == "length")
+                                throw new InvalidDataException("LLM response reached the completion token budget (finish_reason=length). Increase LLM API.MaxTokens; reasoning tokens also use this budget.");
 
                             assistantContent = choice.Message.Content;
 
@@ -224,7 +240,7 @@ namespace GiantessLLMMod.Core
                         if (TryParseActionResponse(assistantContent, out actionResponse, out lastValidationError)
                             && TryValidateActionResponse(actionResponse, !string.IsNullOrWhiteSpace(state?.PlayerInput), out lastValidationError))
                         {
-                            NormalizeActionResponse(actionResponse);
+                            NormalizeActionResponse(actionResponse, maxDialogueLength);
                             break;
                         }
 
@@ -246,20 +262,19 @@ namespace GiantessLLMMod.Core
                     // Update conversation history
                     lock (_historyLock)
                     {
-                        _history.Add(new ChatMessage("user", userContent));
-                        _history.Add(new ChatMessage("assistant", assistantContent));
-
-                        // Trim history
-                        int max = _config.MaxConversationHistory.Value;
-                        while (_history.Count > max)
+                        // ClearHistory during a pending request must stay cleared.
+                        if (_historyVersion == historyVersion)
                         {
-                            _history.RemoveAt(0);
+                            _history.Add(new ChatMessage("user", userContent));
+                            _history.Add(new ChatMessage("assistant", assistantContent));
+                            int remove = _history.Count - maxHistory;
+                            if (remove > 0) _history.RemoveRange(0, remove);
                         }
                     }
 
                     EnqueueMainThread(() =>
                     {
-                        _isBusy = false;
+                        Interlocked.Exchange(ref _isBusy, 0);
                         onSuccess?.Invoke(actionResponse);
                     });
                 }
@@ -267,26 +282,28 @@ namespace GiantessLLMMod.Core
                 {
                     string detail = ReadWebExceptionDetail(ex);
                     _log.LogError($"LLM request failed: {detail}");
-                    EnqueueMainThread(() => { _isBusy = false; onError?.Invoke(detail); });
+                    EnqueueMainThread(() => { Interlocked.Exchange(ref _isBusy, 0); onError?.Invoke(detail); });
                 }
                 catch (Exception ex)
                 {
                     _log.LogError($"LLM request failed: {ex.Message}");
-                    EnqueueMainThread(() => { _isBusy = false; onError?.Invoke(ex.Message); });
+                    EnqueueMainThread(() => { Interlocked.Exchange(ref _isBusy, 0); onError?.Invoke(ex.Message); });
                 }
             });
         }
 
-        private List<ChatMessage> ExecuteToolCallsOnMainThread(List<ToolCall> toolCalls)
+        private List<ChatMessage> ExecuteToolCallsOnMainThread(List<ToolCall> toolCalls, int timeoutMs = 10000)
         {
-            var done = new ManualResetEvent(false);
-            List<ChatMessage> results = null;
+            var completion = new TaskCompletionSource<List<ChatMessage>>();
+            int dispatchState = 0; // 0=pending, 1=started, 2=cancelled before dispatch
 
             EnqueueMainThread(() =>
             {
+                if (Interlocked.CompareExchange(ref dispatchState, 1, 0) != 0)
+                    return;
                 try
                 {
-                    results = new List<ChatMessage>();
+                    var results = new List<ChatMessage>();
                     foreach (var call in toolCalls)
                     {
                         string output = call?.Function == null
@@ -294,17 +311,23 @@ namespace GiantessLLMMod.Core
                             : ToolBridge.ExecuteTool(call.Function.Name, call.Function.Arguments);
                         results.Add(new ChatMessage("tool", output) { ToolCallId = call?.Id });
                     }
+                    completion.TrySetResult(results);
                 }
-                finally
+                catch (Exception ex)
                 {
-                    done.Set();
+                    completion.TrySetException(ex);
                 }
             });
 
-            if (!done.WaitOne(10000))
+            if (!completion.Task.Wait(timeoutMs))
+            {
+                // Paused/stalled main threads must not execute a stale mutation
+                // after the request has already reported a timeout.
+                Interlocked.CompareExchange(ref dispatchState, 2, 0);
                 throw new TimeoutException("Timed out waiting for tool execution on Unity main thread");
+            }
 
-            return results ?? new List<ChatMessage>();
+            return completion.Task.GetAwaiter().GetResult();
         }
 
         private string ReadWebExceptionDetail(WebException ex)
@@ -313,24 +336,27 @@ namespace GiantessLLMMod.Core
             if (response == null)
                 return ex.Message;
 
-            string responseBody = "";
-            try
+            using (response)
             {
-                using (var stream = response.GetResponseStream())
-                using (var reader = new StreamReader(stream, Encoding.UTF8))
+                string responseBody = "";
+                try
                 {
-                    responseBody = reader.ReadToEnd();
+                    using (var stream = response.GetResponseStream())
+                    using (var reader = new StreamReader(stream, Encoding.UTF8))
+                    {
+                        responseBody = reader.ReadToEnd();
+                    }
                 }
-            }
-            catch
-            {
-                // Preserve the status line if the response body cannot be read.
-            }
+                catch
+                {
+                    // Preserve the status line if the response body cannot be read.
+                }
 
-            string status = $"{(int)response.StatusCode} {response.StatusDescription}";
-            return string.IsNullOrWhiteSpace(responseBody)
-                ? $"HTTP {status}: {ex.Message}"
-                : $"HTTP {status}: {responseBody}";
+                string status = $"{(int)response.StatusCode} {response.StatusDescription}";
+                return string.IsNullOrWhiteSpace(responseBody)
+                    ? $"HTTP {status}: {ex.Message}"
+                    : $"HTTP {status}: {responseBody}";
+            }
         }
 
         private string NormalizeApiKey(string apiKey)
@@ -351,7 +377,11 @@ namespace GiantessLLMMod.Core
         /// </summary>
         public void ClearHistory()
         {
-            lock (_historyLock) { _history.Clear(); }
+            lock (_historyLock)
+            {
+                _historyVersion++;
+                _history.Clear();
+            }
         }
 
         public int HistoryCount
@@ -478,7 +508,7 @@ namespace GiantessLLMMod.Core
             return true;
         }
 
-        private void NormalizeActionResponse(LLMActionResponse response)
+        private void NormalizeActionResponse(LLMActionResponse response, int maxDialogueLength)
         {
             if (response == null) return;
 
@@ -488,8 +518,13 @@ namespace GiantessLLMMod.Core
             if (string.IsNullOrEmpty(response.Emotion) || !ActionDefinitions.EmotionMap.ContainsKey(response.Emotion))
                 response.Emotion = "neutral";
 
-            if (response.Dialogue != null && response.Dialogue.Length > 220)
-                response.Dialogue = response.Dialogue.Substring(0, 217) + "...";
+            if (response.Dialogue != null && response.Dialogue.Length > maxDialogueLength)
+            {
+                int keep = maxDialogueLength > 3 ? maxDialogueLength - 3 : maxDialogueLength;
+                // Do not cut a UTF-16 surrogate pair in half.
+                if (keep > 0 && char.IsHighSurrogate(response.Dialogue[keep - 1])) keep--;
+                response.Dialogue = response.Dialogue.Substring(0, keep) + (maxDialogueLength > 3 ? "..." : "");
+            }
         }
 
         // ──────────────────── State Formatting ────────────────────

@@ -93,8 +93,13 @@ namespace GiantessLLMMod.Patches
 
         private static void Postfix(ref bool __result)
         {
-            if (UIInputBlocker.InputCaptured)
-                __result = false;
+            if (!UIInputBlocker.IsOverlayVisible)
+                return;
+
+            // While the F8 window owns focus, suppress game controls. After an
+            // outside click releases focus, explicitly restore them so camera-look
+            // axes are processed even though the overlay remains visible.
+            __result = !UIInputBlocker.InputCaptured;
         }
     }
 
@@ -194,6 +199,11 @@ namespace GiantessLLMMod.Patches
         private static bool Prefix(ref bool __result)
         {
             if (!UIInputBlocker.IsOverlayVisible)
+                return true;
+
+            // The overlay may stay visible in game-focus mode. In that mode the
+            // original pause/control routine must run or mouse-look stays gated.
+            if (!UIInputBlocker.InputCaptured)
                 return true;
 
             if (Input.GetKeyDown(KeyCode.Escape))
