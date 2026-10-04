@@ -21,6 +21,7 @@ namespace GiantessLLMMod.Core
         public ConfigEntry<string> ModelName;
         public ConfigEntry<float> Temperature;
         public ConfigEntry<int> MaxTokens;
+        public ConfigEntry<string> TokenLimitParameter;
 
         // ─── Behavior ───
         public ConfigEntry<bool> AutoTriggerEnabled;
@@ -48,6 +49,7 @@ namespace GiantessLLMMod.Core
         public ConfigEntry<float> EmotionBlendTime;
         public ConfigEntry<float> UiSnapshotInterval;
         public ConfigEntry<float> EventPollInterval;
+        public ConfigEntry<bool> AutoReturnToGameOnOutsideClick;
         public ConfigEntry<int> ApiTimeoutMs;
 
         // ─── Keys ───
@@ -87,7 +89,13 @@ namespace GiantessLLMMod.Core
 
             MaxTokens = config.Bind("LLM API", "MaxTokens",
                 700,
-                "Maximum tokens in LLM response");
+                new ConfigDescription("Completion token budget (includes reasoning tokens on reasoning models)",
+                    new AcceptableValueRange<int>(1, 128000)));
+
+            TokenLimitParameter = config.Bind("LLM API", "TokenLimitParameter",
+                "Auto",
+                new ConfigDescription("Auto selects max_completion_tokens for OpenAI/reasoning models and max_tokens for local/legacy APIs.",
+                    new AcceptableValueList<string>("Auto", "max_tokens", "max_completion_tokens")));
 
             // Behavior
             AutoTriggerEnabled = config.Bind("Behavior", "AutoTriggerEnabled",
@@ -182,6 +190,10 @@ namespace GiantessLLMMod.Core
             EventPollInterval = config.Bind("Reflection", "EventPollInterval",
                 0.10f,
                 "Seconds between lightweight player-state polls while event triggering is enabled.");
+
+            AutoReturnToGameOnOutsideClick = config.Bind("UI", "AutoReturnToGameOnOutsideClick",
+                true,
+                "Keep the F8 menu visible but return controls to the game after clicking outside it.");
 
             ApiTimeoutMs = config.Bind("LLM API", "ApiTimeoutMs",
                 45000,

@@ -17,6 +17,7 @@ namespace GiantessLLMMod.Core
     {
         private readonly ManualLogSource _log;
         private readonly ConfigManager _config;
+        private readonly PerformanceMonitor _performance;
 
         // Cached assembly + types
         private Assembly _gameAssembly;
@@ -40,6 +41,7 @@ namespace GiantessLLMMod.Core
         private MonoBehaviour[] _cachedGiantessAIs = Array.Empty<MonoBehaviour>();
         private MonoBehaviour[] _cachedMouthTriggers = Array.Empty<MonoBehaviour>();
         private readonly List<SceneColliderEntry> _sceneColliderEntries = new List<SceneColliderEntry>();
+        private int _activeColliderCount;
         private float _nextMissingObjectRetryTime;
 
         private sealed class SceneColliderEntry
@@ -136,10 +138,11 @@ namespace GiantessLLMMod.Core
             public float Burp;
         }
 
-        public GameStateCollector(ManualLogSource log, ConfigManager config = null)
+        public GameStateCollector(ManualLogSource log, ConfigManager config = null, PerformanceMonitor performance = null)
         {
             _log = log;
             _config = config;
+            _performance = performance;
         }
 
         /// <summary>
@@ -165,9 +168,9 @@ namespace GiantessLLMMod.Core
                 _personalityType = FindType("GiantessPersonality");
                 _stomachType = FindType("StomachLogic");
                 _entityMemoryType = FindType("EntityMemory");
-                _reimuType = FindType("ReimuAnimationController");
-                _firstPersonAioType = FindType("FirstPersonAIO");
-                _mouthTriggerType = FindType("MouthTrigger");
+                _reimuType = FindType("ReimuAnimationController", logMissing: false);
+                _firstPersonAioType = FindType("FirstPersonAIO", logMissing: false);
+                _mouthTriggerType = FindType("MouthTrigger", logMissing: false);
 
                 if (_giantessAIType != null)
                     CacheGiantessFields();
@@ -197,6 +200,10 @@ namespace GiantessLLMMod.Core
         /// </summary>
         public GameStateSnapshot CollectState(bool includeSceneObjects = true)
         {
+            long fullSnapshotStart = includeSceneObjects && _performance != null
+                ? _performance.GetTimestamp()
+                : 0;
+
             if (!_cacheBuilt)
             {
                 BuildCache();
@@ -211,12 +218,20 @@ namespace GiantessLLMMod.Core
             };
 
             // Collect player data
-            snapshot.Player = CollectPlayerState();
+            using (_performance?.Measure(PerfMetric.SnapshotPlayer) ?? default(PerformanceMonitor.Scope))
+                snapshot.Player = CollectPlayerState();
 
             // Collect all giantess data
-            snapshot.Giantesses = CollectGiantessStates(snapshot.Player);
+            using (_performance?.Measure(PerfMetric.SnapshotGiantesses) ?? default(PerformanceMonitor.Scope))
+                snapshot.Giantesses = CollectGiantessStates(snapshot.Player);
             if (includeSceneObjects)
-                snapshot.SceneObjects = CollectSceneObjectCandidates(snapshot.Player);
+            {
+                using (_performance?.Measure(PerfMetric.SnapshotSceneObjects) ?? default(PerformanceMonitor.Scope))
+                    snapshot.SceneObjects = CollectSceneObjectCandidates(snapshot.Player);
+            }
+
+            if (fullSnapshotStart != 0)
+                _performance.RecordElapsed(PerfMetric.FullSnapshot, fullSnapshotStart);
 
             return snapshot;
         }
@@ -599,6 +614,12 @@ namespace GiantessLLMMod.Core
 
             if (force || sceneChanged)
                 RebuildSceneColliderIndex();
+
+            _performance?.SetSceneStats(
+                _activeColliderCount,
+                _sceneColliderEntries.Count,
+                _cachedGiantessAIs.Count(ai => ai != null),
+                _cachedMouthTriggers.Count(trigger => trigger != null));
         }
 
         private MonoBehaviour[] FindMonoBehaviours(Type type)
@@ -612,7 +633,9 @@ namespace GiantessLLMMod.Core
 
         private void RebuildSceneColliderIndex()
         {
+            long started = _performance?.GetTimestamp() ?? 0;
             _sceneColliderEntries.Clear();
+            _activeColliderCount = 0;
             var seen = new HashSet<string>(StringComparer.Ordinal);
 
             try
@@ -621,6 +644,8 @@ namespace GiantessLLMMod.Core
                 {
                     if (col == null || !col.enabled || col.isTrigger)
                         continue;
+
+                    _activeColliderCount++;
 
                     var go = col.gameObject;
                     if (go == null || !go.activeInHierarchy)
@@ -655,6 +680,11 @@ namespace GiantessLLMMod.Core
             catch (Exception ex)
             {
                 _log.LogWarning($"Error indexing scene objects: {ex.Message}");
+            }
+            finally
+            {
+                if (started != 0)
+                    _performance.RecordElapsed(PerfMetric.SceneCacheRebuild, started);
             }
         }
 
@@ -897,7 +927,7 @@ namespace GiantessLLMMod.Core
 
         // ──────────────────── Helpers ────────────────────
 
-        private Type FindType(string name)
+        private Type FindType(string name, bool logMissing = true)
         {
             var type = _gameAssembly.GetTypes().FirstOrDefault(t => t.Name == name);
             if (type == null)
@@ -906,7 +936,7 @@ namespace GiantessLLMMod.Core
                 type = _gameAssembly.GetTypes().FirstOrDefault(t =>
                     string.Equals(t.Name, name, StringComparison.OrdinalIgnoreCase));
             }
-            if (type == null) _log.LogWarning($"Type not found: {name}");
+            if (type == null && logMissing) _log.LogWarning($"Type not found: {name}");
             return type;
         }
 

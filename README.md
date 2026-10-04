@@ -50,6 +50,7 @@ Press the **F8** key (default) in-game to open the Mod Overlay.
 * **Triggers:** Enable/Disable timed triggers or event-based triggers.
 * **Prompts:** Customize the system prompt to define the personality of the giantesses.
 * **Response diagnostics:** Invalid, empty, unsupported, or action-only chat responses are reported in the Chat/System view and `BepInEx/LogOutput.log` instead of failing silently.
+* **Token compatibility:** Keep `TokenLimitParameter=Auto` (Config tab: Auto). OpenAI and GPT-5/6/o-series requests use `max_completion_tokens`; local/legacy APIs retain `max_tokens`. Legacy/Completion explicitly override this for custom providers. The Config tab also exposes the token budget. GPT-6 Sol/Luna chat tool requests set `reasoning_effort=none`; reasoning-model requests omit `temperature`. A `finish_reason=length` error means the token budget should be increased, rather than resending malformed output.
 
 ### ⌨️ Keybinds (Default)
 
@@ -125,6 +126,7 @@ Press the **F8** key (default) in-game to open the Mod Overlay.
   * **使用 Ollama 原生格式：** 将接口地址设置为以 `/api/generate` 结尾（如 `http://127.0.0.1:11434/api/generate`）。模组会自动检测并切换到 Ollama 原生的提问格式。
 * **触发器：** 开启/关闭定时触发或事件驱动触发。
 * **提示词：** 自定义系统提示词 (System Prompt) 以定义女巨人的个性。
+* **Token 兼容性：** `TokenLimitParameter` 默认保持 `Auto`。OpenAI 与 GPT-5/6/o 系列使用 `max_completion_tokens`；本地和旧接口保留 `max_tokens`。自定义接口可在 Config 页选 Legacy/Completion 覆盖参数名，Token budget 调整输出预算。GPT-6 Sol/Luna 的 Chat 工具调用带 `reasoning_effort=none`，推理模型省略 `temperature`。如出现 `finish_reason=length`，提高预算后再试。
 * **响应诊断：** 空响应、错误 JSON、未知动作或聊天回复缺少文字时，会在 Chat/System 和 `BepInEx/LogOutput.log` 中显示具体错误，不再静默无输出。
 
 ### 🚀 CI/CD & Development

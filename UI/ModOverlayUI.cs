@@ -13,7 +13,7 @@ namespace GiantessLLMMod.UI
         private bool _visible = false;
         private Rect _windowRect = new Rect(20, 20, 520, 420);
         private int _currentTab = 0;
-        private readonly string[] _tabs = { "Status", "Chat", "Config", "Log" };
+        private readonly string[] _tabs = { "Status", "Chat", "Performance", "Config", "Log" };
 
         // Chat state
         private readonly List<ChatEntry> _chatLog = new List<ChatEntry>();
@@ -22,12 +22,19 @@ namespace GiantessLLMMod.UI
 
         // Status scroll
         private Vector2 _statusScroll;
+        private Vector2 _performanceScroll;
+        private float _nextPerformanceViewRefresh;
+        private List<PerfMetricSnapshot> _performanceView = new List<PerfMetricSnapshot>();
+        private PerfHistorySnapshot _performanceHistory;
 
         // Config scroll
         private Vector2 _configScroll;
 
         // Config temp values
         private string _cfgApiUrl, _cfgApiKey, _cfgModel;
+        private string _cfgMaxTokens;
+        private int _cfgTokenLimitMode;
+        private static readonly string[] TokenLimitModes = { "Auto", "max_tokens", "max_completion_tokens" };
         private string _testActionInput = "face_player";
         private bool _cfgTimedTrigger, _cfgEventTrigger, _cfgDebug, _cfgNativeDialogue, _cfgDryRun, _cfgForceInterruptBusyActions;
         private float _cfgTimedTriggerInterval, _cfgEventTriggerCooldown;
@@ -38,6 +45,7 @@ namespace GiantessLLMMod.UI
 
         // References
         private ConfigManager _config;
+        private PerformanceMonitor _performance;
         private GameStateSnapshot _lastState;
 
         // Styles (lazily initialized)
@@ -49,9 +57,10 @@ namespace GiantessLLMMod.UI
         public string PendingPlayerInput { get; private set; }
         public string PendingTestAction { get; private set; }
 
-        public void Init(ConfigManager config)
+        public void Init(ConfigManager config, PerformanceMonitor performance = null)
         {
             _config = config;
+            _performance = performance;
             SyncConfigValues();
         }
 
@@ -99,7 +108,7 @@ namespace GiantessLLMMod.UI
         {
             if (!_visible) return;
             InitStyles();
-            _windowRect = GUI.Window(98765, _windowRect, DrawWindow, "GiantessLLMMod v1.0");
+            _windowRect = GUI.Window(98765, _windowRect, DrawWindow, "GiantessLLMMod — F8 Menu");
 
             var e = Event.current;
             if (e != null && _windowRect.Contains(e.mousePosition) &&
@@ -118,11 +127,100 @@ namespace GiantessLLMMod.UI
             {
                 case 0: DrawStatusTab(); break;
                 case 1: DrawChatTab(); break;
-                case 2: DrawConfigTab(); break;
-                case 3: DrawLogTab(); break;
+                case 2: DrawPerformanceTab(); break;
+                case 3: DrawConfigTab(); break;
+                case 4: DrawLogTab(); break;
             }
 
             GUI.DragWindow(new Rect(0, 0, 10000, 20));
+        }
+
+        // ──────────────────── Performance Tab ────────────────────
+
+        private void DrawPerformanceTab()
+        {
+            _performanceScroll = GUILayout.BeginScrollView(_performanceScroll);
+
+            if (_performance == null)
+            {
+                GUILayout.Label("Performance counters are not active for this client.", _labelStyle);
+                GUILayout.EndScrollView();
+                return;
+            }
+
+            GUILayout.Label("── Runtime ──", _headerStyle);
+            GUILayout.Label($"FPS: {_performance.Fps:F1}    Frame: {_performance.FrameMs:F2} ms", _labelStyle);
+            GUILayout.Label($"Managed memory: {FormatBytes(_performance.ManagedBytes)}", _labelStyle);
+            GUILayout.Label($"GC collections (last sample): {_performance.GcCollections}", _labelStyle);
+
+            GUILayout.Space(6);
+            bool autoReturn = GUILayout.Toggle(
+                _config.AutoReturnToGameOnOutsideClick.Value,
+                "Click outside window to return controls to game");
+            if (autoReturn != _config.AutoReturnToGameOnOutsideClick.Value)
+            {
+                _config.AutoReturnToGameOnOutsideClick.Value = autoReturn;
+                _config.Save();
+            }
+            GUILayout.Label(
+                autoReturn
+                    ? "F8 menu stays visible; click inside it to capture the cursor again."
+                    : "F8 menu keeps keyboard and mouse focus until closed or focus mode is enabled.",
+                _labelStyle);
+
+            if (_performance.SceneStatsAvailable)
+            {
+                GUILayout.Space(6);
+                GUILayout.Label("── Active Scene Data ──", _headerStyle);
+                if (_performance.ActiveColliderCount > 0)
+                    GUILayout.Label($"Active non-trigger colliders: {_performance.ActiveColliderCount}", _labelStyle);
+                if (_performance.GiantessCount > 0)
+                    GUILayout.Label($"GiantessAI: {_performance.GiantessCount}", _labelStyle);
+                if (_performance.MouthTriggerCount > 0)
+                    GUILayout.Label($"MouthTrigger: {_performance.MouthTriggerCount}", _labelStyle);
+                if (_performance.CachedSurfaces > 0)
+                    GUILayout.Label($"Cached surfaces: {_performance.CachedSurfaces}", _labelStyle);
+            }
+
+            if (Time.unscaledTime >= _nextPerformanceViewRefresh)
+            {
+                _nextPerformanceViewRefresh = Time.unscaledTime + 0.5f;
+                _performanceView = _performance.GetActiveMetrics();
+                _performanceHistory = _performance.GetHistory();
+            }
+
+            if (_performanceHistory != null && _performanceHistory.Count > 1)
+            {
+                GUILayout.Space(6);
+                GUILayout.Label("── 30 Second History ──", _headerStyle);
+                DrawHistoryChart("Frame time (ms)", _performanceHistory.FrameMs, new Color(1f, 0.75f, 0.2f), true);
+                DrawHistoryChart("FPS", _performanceHistory.Fps, new Color(0.35f, 1f, 0.45f), true);
+                DrawHistoryChart("Managed memory (MB)", _performanceHistory.ManagedMb, new Color(0.3f, 0.85f, 1f), false);
+            }
+
+            if (_performanceView.Count > 0)
+            {
+                GUILayout.Space(6);
+                GUILayout.Label("── Available Instrumentation ──", _headerStyle);
+                GUILayout.Label("Element                         Last     Avg      Max    Calls", _labelStyle);
+                foreach (var metric in _performanceView)
+                {
+                    GUILayout.Label(
+                        $"{metric.Name,-28} {metric.LastMs,7:F3} {metric.AverageMs,7:F3} {metric.MaxMs,7:F3} {metric.Calls,7}",
+                        _labelStyle);
+                }
+            }
+
+            GUILayout.Space(8);
+            if (GUILayout.Button("Reset Counters", GUILayout.Width(130)))
+            {
+                _performance.Reset();
+                _performanceView.Clear();
+                _performanceHistory = null;
+                _nextPerformanceViewRefresh = 0f;
+            }
+
+            GUILayout.EndScrollView();
         }
 
         // ──────────────────── Status Tab ────────────────────
@@ -185,10 +283,15 @@ namespace GiantessLLMMod.UI
 
             GUILayout.Space(5);
             GUILayout.BeginHorizontal();
+            GUI.SetNextControlName("chatInput");
             _chatInput = GUILayout.TextField(_chatInput, GUILayout.ExpandWidth(true));
 
+            bool wasEnabled = GUI.enabled;
+            GUI.enabled = wasEnabled && PendingPlayerInput == null;
             bool sendClicked = GUILayout.Button("Send", GUILayout.Width(60));
-            bool enterPressed = Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return
+            GUI.enabled = wasEnabled;
+            bool enterPressed = wasEnabled && PendingPlayerInput == null
+                && Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return
                 && GUI.GetNameOfFocusedControl() == "chatInput";
 
             if ((sendClicked || enterPressed) && !string.IsNullOrWhiteSpace(_chatInput))
@@ -197,14 +300,19 @@ namespace GiantessLLMMod.UI
                 AddChatEntry("You", PendingPlayerInput, new Color(0.5f, 1f, 1f));
                 _chatInput = "";
                 GUI.FocusControl(null);
+                if (enterPressed) Event.current.Use();
             }
             GUILayout.EndHorizontal();
 
+            GUI.enabled = wasEnabled && PendingPlayerInput == null;
             if (GUILayout.Button("Manual LLM Trigger (F7)"))
             {
                 // Handled by Plugin.cs checking for this
                 PendingPlayerInput = PendingPlayerInput ?? "";
             }
+            GUI.enabled = wasEnabled;
+            if (PendingPlayerInput != null)
+                GUILayout.Label("Queued: waiting for the current request to finish.");
         }
 
         // ──────────────────── Config Tab ────────────────────
@@ -228,6 +336,14 @@ namespace GiantessLLMMod.UI
             GUILayout.Label("Model:", GUILayout.Width(50));
             _cfgModel = GUILayout.TextField(_cfgModel);
             GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Token budget:", GUILayout.Width(110));
+            _cfgMaxTokens = GUILayout.TextField(_cfgMaxTokens);
+            GUILayout.EndHorizontal();
+            GUILayout.Label("Token parameter (Auto recommended):");
+            _cfgTokenLimitMode = GUILayout.Toolbar(_cfgTokenLimitMode, new[] { "Auto", "Legacy", "Completion" });
+            GUILayout.Label("GPT-5/6 and o-series: sampling temperature omitted. GPT-6 Sol/Luna chat tools: reasoning=none.");
 
             GUILayout.Space(5);
             GUILayout.Label("── Behavior ──", _headerStyle);
@@ -285,9 +401,16 @@ namespace GiantessLLMMod.UI
 
         private void ApplyAndSave(bool saveToDisk)
         {
+            if (!int.TryParse(_cfgMaxTokens, out int maxTokens) || maxTokens < 1 || maxTokens > 128000)
+            {
+                AddLog("Token budget must be an integer between 1 and 128000.");
+                return;
+            }
             _config.ApiBaseUrl.Value = _cfgApiUrl?.Trim();
             _config.ApiKey.Value = _cfgApiKey?.Trim();
             _config.ModelName.Value = _cfgModel?.Trim();
+            _config.MaxTokens.Value = maxTokens;
+            _config.TokenLimitParameter.Value = TokenLimitModes[_cfgTokenLimitMode];
             _config.TimedTriggerEnabled.Value = _cfgTimedTrigger;
             _config.TimedTriggerInterval.Value = Mathf.Clamp(_cfgTimedTriggerInterval, 5f, 120f);
             _config.EventTriggerEnabled.Value = _cfgEventTrigger;
@@ -327,6 +450,9 @@ namespace GiantessLLMMod.UI
         private void SyncConfigValues()
         {
             if (_config == null) return;
+            _cfgMaxTokens = _config.MaxTokens.Value.ToString();
+            _cfgTokenLimitMode = System.Array.IndexOf(TokenLimitModes, _config.TokenLimitParameter.Value);
+            if (_cfgTokenLimitMode < 0) _cfgTokenLimitMode = 0;
             _cfgApiUrl = _config.ApiBaseUrl.Value;
             _cfgApiKey = _config.ApiKey.Value;
             _cfgModel = _config.ModelName.Value;
@@ -348,6 +474,66 @@ namespace GiantessLLMMod.UI
             _headerStyle = new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold };
             _chatStyle = new GUIStyle(GUI.skin.label) { fontSize = 12, wordWrap = true, richText = true };
             _stylesInit = true;
+        }
+
+        private static string FormatBytes(long bytes)
+        {
+            if (bytes >= 1024L * 1024L * 1024L)
+                return $"{bytes / (1024d * 1024d * 1024d):F2} GB";
+            if (bytes >= 1024L * 1024L)
+                return $"{bytes / (1024d * 1024d):F1} MB";
+            if (bytes >= 1024L)
+                return $"{bytes / 1024d:F1} KB";
+            return bytes + " B";
+        }
+
+        private void DrawHistoryChart(string title, float[] values, Color color, bool zeroBaseline)
+        {
+            if (values == null || values.Length < 2) return;
+
+            GUILayout.Label(title, _labelStyle);
+            Rect rect = GUILayoutUtility.GetRect(460f, 90f, GUILayout.ExpandWidth(true));
+            GUI.Box(rect, GUIContent.none, _boxStyle);
+
+            float min = values[0];
+            float max = values[0];
+            for (int i = 1; i < values.Length; i++)
+            {
+                if (values[i] < min) min = values[i];
+                if (values[i] > max) max = values[i];
+            }
+
+            if (zeroBaseline) min = 0f;
+            if (max - min < 0.001f) max = min + 1f;
+
+            Rect plot = new Rect(rect.x + 5f, rect.y + 15f, rect.width - 10f, rect.height - 22f);
+            for (int i = 1; i < values.Length; i++)
+            {
+                float x0 = plot.x + plot.width * (i - 1) / (values.Length - 1f);
+                float x1 = plot.x + plot.width * i / (values.Length - 1f);
+                float y0 = plot.yMax - plot.height * Mathf.InverseLerp(min, max, values[i - 1]);
+                float y1 = plot.yMax - plot.height * Mathf.InverseLerp(min, max, values[i]);
+                DrawLine(new Vector2(x0, y0), new Vector2(x1, y1), color, 2f);
+            }
+
+            GUI.Label(new Rect(rect.x + 6f, rect.y, rect.width - 12f, 18f),
+                $"min {min:F1}    max {max:F1}    now {values[values.Length - 1]:F1}", _labelStyle);
+        }
+
+        private static void DrawLine(Vector2 start, Vector2 end, Color color, float width)
+        {
+            Vector2 delta = end - start;
+            float length = delta.magnitude;
+            if (length <= 0.01f) return;
+
+            Matrix4x4 previousMatrix = GUI.matrix;
+            Color previousColor = GUI.color;
+            float angle = Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg;
+            GUIUtility.RotateAroundPivot(angle, start);
+            GUI.color = color;
+            GUI.DrawTexture(new Rect(start.x, start.y - width * 0.5f, length, width), Texture2D.whiteTexture);
+            GUI.matrix = previousMatrix;
+            GUI.color = previousColor;
         }
 
         private struct ChatEntry

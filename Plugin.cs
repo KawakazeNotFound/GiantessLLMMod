@@ -26,6 +26,7 @@ namespace GiantessLLMMod
         // Core systems
         private ConfigManager _config;
         private GameStateCollector _collector;
+        private PerformanceMonitor _performance;
         private LLMClient _llmClient;
         private ActionExecutor _executor;
         private EventWatcher _eventWatcher;
@@ -51,8 +52,10 @@ namespace GiantessLLMMod
             _harmony.PatchAll(typeof(UIInputBlocker).Assembly);
 
             // Initialize systems
-            _collector = new GameStateCollector(Logger, _config);
+            _performance = new PerformanceMonitor();
+            _collector = new GameStateCollector(Logger, _config, _performance);
             _llmClient = new LLMClient(Logger, _config);
+            Logger.LogInfo("LLM API compatibility revision: token-policy-v1 (Auto token limit and GPT-6 Sol/Luna chat tools).");
             _executor = new ActionExecutor(Logger, _collector, _config);
             _eventWatcher = new EventWatcher(Logger);
             
@@ -61,7 +64,7 @@ namespace GiantessLLMMod
 
             // Initialize UI
             _ui = new ModOverlayUI();
-            _ui.Init(_config);
+            _ui.Init(_config, _performance);
 
             Logger.LogInfo($"{PLUGIN_NAME} loaded. Press {_config.ToggleUIKey.Value} for overlay, " +
                 $"{_config.ManualTriggerKey.Value} to trigger LLM, {_config.ProbeKey.Value} for reflection probe.");
@@ -69,6 +72,7 @@ namespace GiantessLLMMod
 
         private void Update()
         {
+            _performance.UpdateFrame(Time.unscaledDeltaTime, Time.unscaledTime);
             SyncOverlayInputState();
 
             // Process LLM callbacks on main thread
@@ -97,9 +101,14 @@ namespace GiantessLLMMod
                 TriggerLLM(null);
 
             // Check for player input from UI
-            string playerInput = _ui.ConsumePendingInput();
-            if (playerInput != null && playerInput.Length > 0)
-                TriggerLLM(playerInput);
+            // Leave a submitted message pending until the active request finishes.
+            // An empty string is the overlay's manual-trigger sentinel.
+            if (!_llmClient.IsBusy)
+            {
+                string playerInput = _ui.ConsumePendingInput();
+                if (playerInput != null)
+                    TriggerLLM(string.IsNullOrWhiteSpace(playerInput) ? null : playerInput);
+            }
 
             string testAction = _ui.ConsumePendingTestAction();
             if (!string.IsNullOrEmpty(testAction))
@@ -124,7 +133,8 @@ namespace GiantessLLMMod
             if (_ui.Visible && Time.unscaledTime >= _nextUiSnapshotTime)
             {
                 _nextUiSnapshotTime = Time.unscaledTime + Mathf.Max(0.10f, _config.UiSnapshotInterval.Value);
-                _lastSnapshot = _collector.CollectState(includeSceneObjects: false);
+                using (_performance.Measure(PerfMetric.UiSnapshot))
+                    _lastSnapshot = _collector.CollectState(includeSceneObjects: false);
                 if (_lastSnapshot != null)
                     _ui.SetLastState(_lastSnapshot);
             }
@@ -134,7 +144,8 @@ namespace GiantessLLMMod
             if (_config.EventTriggerEnabled.Value && Time.unscaledTime >= _nextEventPollTime)
             {
                 _nextEventPollTime = Time.unscaledTime + Mathf.Max(0.05f, _config.EventPollInterval.Value);
-                _eventWatcher.UpdatePlayer(_collector.CollectEventPlayerState());
+                using (_performance.Measure(PerfMetric.EventPlayerPoll))
+                    _eventWatcher.UpdatePlayer(_collector.CollectEventPlayerState());
             }
 
             // Automatic triggers
@@ -156,7 +167,9 @@ namespace GiantessLLMMod
 
         private void OnGUI()
         {
-            _ui.Draw();
+            if (!_ui.Visible) return;
+            using (_performance.Measure(PerfMetric.OverlayDraw))
+                _ui.Draw();
         }
 
         private void UpdateCursorForOverlay()
@@ -202,7 +215,7 @@ namespace GiantessLLMMod
             {
                 if (_ui.ContainsScreenMouse())
                     UIInputBlocker.CaptureInput();
-                else if (UIInputBlocker.InputCaptured)
+                else if (UIInputBlocker.InputCaptured && _config.AutoReturnToGameOnOutsideClick.Value)
                     _releaseOverlayInputOnMouseUp = true;
             }
 
@@ -255,13 +268,16 @@ namespace GiantessLLMMod
                 Logger.LogInfo($"LLM request: events={events.Count}, playerInput={playerInput}");
             }
 
+            long llmStart = _performance.GetTimestamp();
             _llmClient.SendRequest(state,
                 onSuccess: response =>
                 {
+                    _performance.RecordElapsed(PerfMetric.LlmRoundTrip, llmStart);
                     HandleLLMResponse(response);
                 },
                 onError: error =>
                 {
+                    _performance.RecordElapsed(PerfMetric.LlmRoundTrip, llmStart);
                     _ui.AddLog($"LLM Error: {error}");
                     _ui.AddChatEntry("System", $"Error: {error}", Color.red);
                     Logger.LogError($"LLM error: {error}");
@@ -297,7 +313,8 @@ namespace GiantessLLMMod
             }
 
             // Execute the action
-            _executor.Execute(response);
+            using (_performance.Measure(PerfMetric.ActionExecution))
+                _executor.Execute(response);
             _ui.AddLog($"Executed: {_executor.LastExecutionLog}");
         }
 
@@ -311,13 +328,16 @@ namespace GiantessLLMMod
 
             _config.ReloadPromptDefinitions();
             _ui.AddLog($"Testing action: {action}");
-            _executor.Execute(new LLMActionResponse
+            using (_performance.Measure(PerfMetric.ActionExecution))
             {
-                Action = action,
-                Emotion = null,
-                Dialogue = null,
-                Ask = null
-            });
+                _executor.Execute(new LLMActionResponse
+                {
+                    Action = action,
+                    Emotion = null,
+                    Dialogue = null,
+                    Ask = null
+                });
+            }
             _ui.AddLog($"Test result: {_executor.LastExecutionLog}");
         }
 
