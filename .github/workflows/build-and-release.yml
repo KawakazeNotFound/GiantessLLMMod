@@ -2,67 +2,121 @@ name: Build and Release
 
 on:
   push:
-    tags:
-      - 'V*'
-      - 'dev'
+    branches: [main]
+    tags: ['V*', 'v*', 'dev', 'Dev']
+  pull_request:
+    branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    
+    name: Build, test and package
+    # Windows is required to execute the net472 regression suite natively.
+    runs-on: windows-2022
+    timeout-minutes: 15
+    outputs:
+      artifact-name: ${{ format('GiantessLLMMod-{0}-{1}', github.run_id, github.run_attempt) }}
+    defaults:
+      run:
+        shell: pwsh
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
-          dotnet-version: '8.0.x' # Using modern SDK to build net472
+          dotnet-version: '8.0.x'
+
+      - name: Restore projects
+        run: |
+          dotnet restore GiantessLLMMod.csproj
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet restore tests/LLMClient.Regression/LLMClient.Regression.csproj
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build Mod
-        run: |
-          dotnet build GiantessLLMMod.csproj -c Release /p:ReferencePath="libs"
+        run: dotnet build GiantessLLMMod.csproj -c Release --no-restore
 
-      - name: Prepare Artifacts
-        run: |
-          mkdir -p dist
-          cp bin/Release/net472/GiantessLLMMod.dll dist/
-          cp llm_system_prompt.conf dist/
-          cp install-ollama.bat dist/
-          cp install-ollama.ps1 dist/
-          # Optional: Include other necessary files
-          # cp README.md dist/
+      - name: Build regression tests
+        run: dotnet build tests/LLMClient.Regression/LLMClient.Regression.csproj -c Release --no-restore
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+      - name: Run .NET Framework 4.7.2 regressions
+        run: |
+          & './tests/LLMClient.Regression/bin/Release/net472/LLMClient.Regression.exe'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run .NET 8 regressions
+        run: dotnet './tests/LLMClient.Regression/bin/Release/net8.0/LLMClient.Regression.dll'
+
+      - name: Prepare and validate installation package
+        run: ./scripts/Package-Mod.ps1
+
+      - name: Upload installation package
+        id: upload
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: GiantessLLMMod-${{ github.run_id }}
-          path: dist/
+          name: GiantessLLMMod-${{ github.run_id }}-${{ github.run_attempt }}
+          path: bin/ci/dist/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Write build summary
+        env:
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          @"
+          ## Build verified
+          - Commit: $env:GITHUB_SHA
+          - Plugin: net472
+          - Regression suites: net472 and net8.0 passed
+          - [Download installation package]($env:ARTIFACT_URL)
+          - Includes Newtonsoft.Json, default prompt, installers, build metadata and SHA-256 checksums.
+          - This verifies compilation and loopback tests, not Unity gameplay or external API access.
+          "@ | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8
 
   release:
+    name: Publish version tag
     needs: build
-    if: startsWith(github.ref, 'refs/tags/V')
+    if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/V') || startsWith(github.ref, 'refs/tags/v'))
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: write
-    
+
     steps:
-      - name: Download Artifact
-        uses: actions/download-artifact@v4
+      - name: Download installation package
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
-          name: GiantessLLMMod-${{ github.run_id }}
+          name: ${{ needs.build.outputs.artifact-name }}
           path: release_files
 
-      - name: Create Zip
+      - name: Create release zip
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
         run: |
           cd release_files
-          zip -r ../GiantessLLMMod-${{ github.ref_name }}.zip .
+          zip -r "../GiantessLLMMod-${RELEASE_TAG}.zip" .
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           files: GiantessLLMMod-${{ github.ref_name }}.zip
+          fail_on_unmatched_files: true
           name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false

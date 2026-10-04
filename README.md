@@ -133,8 +133,11 @@ Press the **F8** key (default) in-game to open the Mod Overlay.
 
 This project uses GitHub Actions for automated building and releasing.
 
-*   **Release Version:** Push a tag starting with `V` (e.g., `V1.0.0`) to trigger a full GitHub Release.
-*   **Dev Version:** Push a tag named `dev` to trigger a build and upload the DLL as an **Artifact** (downloadable from the Actions page).
+*   **Main / pull requests:** Every push to `main` and pull request targeting `main` builds the plugin and runs both regression suites (`net472` and `net8.0`) on Windows. Failed builds or tests do not produce an installation artifact.
+*   **Downloads:** Open [Build and Release](https://github.com/KawakazeNotFound/GiantessLLMMod/actions/workflows/build-and-release.yml), select a successful run, then download its **GiantessLLMMod** artifact (retained for 30 days). It contains the plugin, Newtonsoft.Json, default prompt, installers, commit metadata and SHA-256 checksums. Back up any customized prompt before extracting the package into the game root; BepInEx must already be installed. Cloud tests are not proof of in-game behavior or external API compatibility.
+*   **Release Version:** Push a tag starting with `V` or `v` (e.g., `V1.0.0`) to build, test and publish a GitHub Release.
+*   **Dev / manual:** Tags named `dev` or `Dev` build artifacts without a Release. **Run workflow** supports manually building a selected branch.
+*   **Local packaging:** After a Release build, run `./scripts/Package-Mod.ps1`; output is `bin/ci/dist`. For a repeat run, pass a fresh `-OutputDirectory bin/ci/another-name`.
 
 #### Dependency Management
 All necessary libraries (UnityEngine, BepInEx, etc.) are stored in the `libs/` folder. This allows the project to be compiled in a clean environment like GitHub Actions. If you update your game and need to update dependencies, copy the new DLLs into the `libs/` folder.
@@ -145,8 +148,11 @@ All necessary libraries (UnityEngine, BepInEx, etc.) are stored in the `libs/` f
 
 项目使用 GitHub Actions 进行自动构建和发布。
 
-*   **正式版本：** 推送以 `V` 开头的标签（例如 `V1.0.0`）将触发自动创建 GitHub Release。
-*   **开发版本：** 推送名为 `dev` 的标签将触发构建，并将生成的 DLL 上传为 **Artifact**（可在 Actions 页面下载）。
+*   **主分支 / PR：** 每次推送 `main` 或提交目标为 `main` 的 PR，都会在 Windows 云端编译插件，并运行 `net472`、`net8.0` 两套回归测试。构建或测试失败时不会上传安装包。
+*   **下载：** 打开 [Build and Release](https://github.com/KawakazeNotFound/GiantessLLMMod/actions/workflows/build-and-release.yml)，进入成功的运行记录，在 **Artifacts** 下载 **GiantessLLMMod**（保留 30 天）。包内包含插件、Newtonsoft.Json、默认提示词、安装脚本、提交信息与 SHA-256 校验值。先备份自定义提示词，再解压到已安装 BepInEx 的游戏根目录。云端测试通过不等于游戏内动作或真实接口已经验证。
+*   **正式版本：** 推送以 `V` 或 `v` 开头的标签（例如 `V1.0.0`），测试通过后自动创建 GitHub Release。
+*   **开发 / 手动：** `dev`、`Dev` 标签只构建安装包，不创建正式 Release；也可点击 **Run workflow** 手动选择分支构建。
+*   **本地打包：** Release 编译后运行 `./scripts/Package-Mod.ps1`，输出位于 `bin/ci/dist`；再次打包时指定新的 `-OutputDirectory bin/ci/another-name`。
 
 #### 依赖管理
 所有必要的库（UnityEngine、BepInEx 等）都存放在 `libs/` 文件夹中。这使得项目可以在 GitHub Actions 等干净的环境中编译。如果你更新了游戏并需要更新依赖，请将新的 DLL 复制到 `libs/` 文件夹中。
