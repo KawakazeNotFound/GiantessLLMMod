@@ -19,9 +19,6 @@
     <Reference Include="BepInEx">
       <HintPath>libs\BepInEx.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>libs\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>libs\UnityEngine.dll</HintPath>
     </Reference>
@@ -49,6 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="[13.0.4]" />
     <Compile Remove="tests\**\*.cs" />
     <None Include="llm_system_prompt.conf" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

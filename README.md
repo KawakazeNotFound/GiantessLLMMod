@@ -140,7 +140,7 @@ This project uses GitHub Actions for automated building and releasing.
 *   **Local packaging:** After a Release build, run `./scripts/Package-Mod.ps1`; output is `bin/ci/dist`. For a repeat run, pass a fresh `-OutputDirectory bin/ci/another-name`.
 
 #### Dependency Management
-All necessary libraries (UnityEngine, BepInEx, etc.) are stored in the `libs/` folder. This allows the project to be compiled in a clean environment like GitHub Actions. If you update your game and need to update dependencies, copy the new DLLs into the `libs/` folder.
+Game/Unity/BepInEx reference assemblies are stored in `libs/`; update those references when updating the game. Newtonsoft.Json is restored from the official NuGet package, pinned to 13.0.4 for both plugin and tests. The legacy `libs/Newtonsoft.Json.dll` is not used: its strong-name signature fails validation on a clean Windows runner. Packaging also verifies the restored runtime DLL's signature; it never disables CLR signature checks.
 
 ---
 
@@ -155,7 +155,7 @@ All necessary libraries (UnityEngine, BepInEx, etc.) are stored in the `libs/` f
 *   **本地打包：** Release 编译后运行 `./scripts/Package-Mod.ps1`，输出位于 `bin/ci/dist`；再次打包时指定新的 `-OutputDirectory bin/ci/another-name`。
 
 #### 依赖管理
-所有必要的库（UnityEngine、BepInEx 等）都存放在 `libs/` 文件夹中。这使得项目可以在 GitHub Actions 等干净的环境中编译。如果你更新了游戏并需要更新依赖，请将新的 DLL 复制到 `libs/` 文件夹中。
+游戏、Unity、BepInEx 的编译引用存放在 `libs/`，游戏升级时再更新这些引用。Newtonsoft.Json 从官方 NuGet 恢复，插件与测试均固定为 13.0.4；旧的 `libs/Newtonsoft.Json.dll` 已停止使用，它在干净 Windows 云端环境中未通过强名称签名校验。打包还会验证恢复后的运行库签名，不关闭 CLR 校验。
 
 ---
 

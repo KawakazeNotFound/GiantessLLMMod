@@ -34,6 +34,31 @@ foreach ($file in $files) {
     }
 }
 
+# Reject invalid/delay-signed reference copies even if the local CLR accepts them.
+if (-not ('GiantessLLMMod.Build.SignatureVerifier' -as [type])) {
+    Add-Type -TypeDefinition @'
+using System.Runtime.InteropServices;
+namespace GiantessLLMMod.Build
+{
+    public static class SignatureVerifier
+    {
+        [DllImport("mscoree.dll", CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool StrongNameSignatureVerificationEx(
+            string path,
+            [MarshalAs(UnmanagedType.Bool)] bool forceVerification,
+            [MarshalAs(UnmanagedType.Bool)] out bool wasVerified);
+    }
+}
+'@
+}
+$verified = $false
+$jsonPath = Join-Path $root 'bin/Release/net472/Newtonsoft.Json.dll'
+$signatureValid = [GiantessLLMMod.Build.SignatureVerifier]::StrongNameSignatureVerificationEx($jsonPath, $true, [ref]$verified)
+if (-not $signatureValid -or -not $verified) {
+    throw 'Newtonsoft.Json strong-name signature is invalid. Restore the official NuGet package before packaging.'
+}
+
 $commit = & git -C $root rev-parse HEAD
 if ($LASTEXITCODE -ne 0 -or $commit -notmatch '^[0-9a-f]{40,64}$') {
     throw 'Could not identify the package source commit.'

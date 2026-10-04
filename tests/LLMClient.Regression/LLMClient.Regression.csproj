@@ -13,8 +13,6 @@
     <Compile Include="../../Models/LLMModels.cs" Link="Production/LLMModels.cs" />
     <Compile Include="../../Models/GameState.cs" Link="Production/GameState.cs" />
     <Compile Include="../../Models/ActionDefinitions.cs" Link="Production/ActionDefinitions.cs" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>../../libs/Newtonsoft.Json.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Newtonsoft.Json" Version="[13.0.4]" />
   </ItemGroup>
 </Project>
