@@ -1,6 +1,6 @@
 # Giantess LLM Mod
 
-Current release: **v0.0.5**
+Current release: **v0.0.6**
 
 [English](#english) | [中文](#中文)
 
@@ -102,7 +102,7 @@ Press the **F8** key (default) in-game to open the Mod Overlay.
 4.  **激活：** 运行一次游戏。看到游戏主界面后直接退出即可。此时游戏目录下会自动生成 `BepInEx/plugins` 等文件夹。
 
 #### 第二步：安装本模组
-1.  **下载：** 下载本模组的最新压缩包（当前版本 **v0.0.5**）。
+1.  **下载：** 下载本模组的最新压缩包（当前版本 **v0.0.6**）。
 2.  **放置文件：**
     *   进入游戏目录下的 `BepInEx/plugins/GiantessLLMMod` 文件夹。
     *   将 `GiantessLLMMod.dll` 与 `llm_system_prompt.conf` 一起放入该文件夹。

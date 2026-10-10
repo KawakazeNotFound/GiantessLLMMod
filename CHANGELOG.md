@@ -1,5 +1,31 @@
 # Changelog
 
+## [v0.0.6] - 2026-10-10
+
+### Added
+- Added configurable Auto / legacy / completion token-limit selection and a token-budget field in the overlay.
+- Added runtime performance counters and history for snapshots, scene indexing, model requests, actions, and overlay drawing.
+- Added 22 loopback regression tests running on both .NET Framework 4.7.2 and .NET 8.
+- Added automatic main-branch/PR builds, tested installation artifacts, build metadata, SHA-256 checksums, and version-tag releases.
+
+### Fixed
+- Fixed modern Chat Completions requests using the rejected `max_tokens` parameter; Auto selects `max_completion_tokens` for OpenAI/reasoning-model requests.
+- Added GPT-6 Sol/Luna chat-tool reasoning policy and omitted unsupported reasoning-model sampling parameters.
+- Fixed busy-state recovery, whole-turn history trimming, in-flight history clearing, callback locking, and expired queued-tool execution.
+- Preserved pending overlay messages while requests are busy and handled the manual-trigger sentinel.
+- Replaced the invalid-signature checked-in Newtonsoft.Json reference with the official NuGet 13.0.4 runtime; installation packaging verifies its strong-name signature.
+
+### Changed
+- Reused scene indexes and separated lightweight event/player polling from full model snapshots instead of per-frame full scene scans.
+- Added configurable outside-click focus return and overlay configuration improvements.
+- Installation archives now contain a game-root layout with the plugin, signed Newtonsoft.Json, default prompt, optional Ollama installers, and third-party notices. Game/Unity/BepInEx reference DLLs are excluded.
+
+### Verification and limitations
+- Compilation and both regression suites are checked before artifact upload or Release publication.
+- Tests use a loopback HTTP server and host substitutes; they do not establish Unity gameplay correctness or real external API compatibility.
+- Existing action-binding, target-identity, scene-lifecycle, and configuration-persistence findings from the architecture review remain follow-up work, not fixes claimed by this release.
+- Back up customized prompts before extracting an installation archive. BepInEx 5 remains a prerequisite.
+
 ## [v0.0.5] - 2026-08-08
 
 ### Added
