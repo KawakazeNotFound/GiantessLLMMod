@@ -371,6 +371,16 @@ namespace GiantessLLMMod
                     return;
                 }
 
+                jsonSb.AppendLine("  \"assembly\": " + JsonConvert.SerializeObject(new {
+                    name = gameAssembly.FullName,
+                    location = gameAssembly.Location,
+                    moduleId = gameAssembly.ManifestModule.ModuleVersionId
+                }) + ",");
+                string handState = _executor.DescribePlayerHandState();
+                jsonSb.AppendLine("  \"playerHandState\": " + JsonConvert.SerializeObject(handState) + ",");
+                sb.AppendLine("Player hand state: " + handState);
+                Logger.LogInfo("[HandSelection] Probe: " + handState);
+
                 sb.AppendLine($"Assembly-CSharp: {gameAssembly.FullName}");
                 sb.AppendLine($"Total types: {gameAssembly.GetTypes().Length}");
                 sb.AppendLine();
@@ -383,12 +393,13 @@ namespace GiantessLLMMod
                     "GiantessScript", "StomachLogic", "OpenMouthTrigger", "MouthTrigger",
                     "FPSBehaviour", "FirstPersonAIO", "ReimuAnimationController", "DigestableObject",
                     "HeightCache", "AdvancedPlayerBot", "PickUpBehaviour", "ToolGunController",
-                    "EntityMemory", "SubCacheClass", "Tablet"
+                    "EntityMemory", "SubCacheClass", "Tablet", "GameEntity", "ScriptObjectReference",
+                    "GiantessExtendHelper"
                 };
 
                 string[] targetEnums = {
                     "MouthFlexType", "EyesFlexType", "EyeTargetType", "ThroatFlexType",
-                    "TongueFlexType", "HeadTiltType", "GiantessStateType", "LocationType",
+                    "TongueFlexType", "HeadTiltType", "GiantessStateType", "LocationType", "EHandType",
                     "GiantessRelationshipType", "GiantessPredatorType", "EHandCutsceneType",
                     "EProcAnimType", "ClothesType"
                 };
@@ -476,7 +487,7 @@ namespace GiantessLLMMod
             }
         }
 
-        private void ProbeClassToJson(Type type, StringBuilder sb, StringBuilder jsonSb)
+        private static void ProbeClassToJson(Type type, StringBuilder sb, StringBuilder jsonSb)
         {
             string baseName = type.BaseType?.Name ?? "none";
             sb.AppendLine($"[class] {type.FullName} : {baseName}");
@@ -502,6 +513,18 @@ namespace GiantessLLMMod
             }
             jsonSb.AppendLine("      ],");
 
+            var properties = type.GetProperties(flags);
+            jsonSb.AppendLine("      \"properties\": " + JsonConvert.SerializeObject(properties.Select(p => new {
+                name = p.Name,
+                type = p.PropertyType.FullName,
+                declaringType = p.DeclaringType?.FullName,
+                canRead = p.CanRead,
+                canWrite = p.CanWrite,
+                indexParameters = p.GetIndexParameters().Select(parameter => parameter.ParameterType.FullName).ToArray()
+            }).ToArray()) + ",");
+            foreach (var property in properties)
+                sb.AppendLine($"  [property] {property.PropertyType.FullName} {property.Name} (declared on {property.DeclaringType?.FullName})");
+
             // Methods (declared only, non-special)
             var methods = type.GetMethods(flags | BindingFlags.DeclaredOnly)
                 .Where(m => !m.IsSpecialName).ToArray();
@@ -514,7 +537,14 @@ namespace GiantessLLMMod
                 var pars = string.Join(", ", m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
                 sb.AppendLine($"  {acc}{stat} {m.ReturnType.Name} {m.Name}({pars})");
                 pars = pars.Replace("\"", "'");
-                jsonSb.Append($"        {{\"name\": \"{m.Name}\", \"return\": \"{m.ReturnType.Name}\", \"params\": \"{pars}\", \"access\": \"{acc}{stat}\"}}");
+                string parameters = JsonConvert.SerializeObject(m.GetParameters().Select(p => new {
+                    name = p.Name,
+                    type = p.ParameterType.FullName,
+                    isOptional = p.IsOptional,
+                    hasDefaultValue = p.HasDefaultValue,
+                    defaultValue = p.HasDefaultValue ? Convert.ToString(p.DefaultValue, System.Globalization.CultureInfo.InvariantCulture) : null
+                }).ToArray());
+                jsonSb.Append($"        {{\"name\": \"{m.Name}\", \"return\": \"{m.ReturnType.Name}\", \"params\": \"{pars}\", \"access\": \"{acc}{stat}\", \"parameters\": {parameters}}}");
                 jsonSb.AppendLine(i < methods.Length - 1 ? "," : "");
             }
             jsonSb.AppendLine("      ]");
@@ -522,7 +552,7 @@ namespace GiantessLLMMod
             sb.AppendLine();
         }
 
-        private void ProbeEnumToJson(Type type, StringBuilder sb, StringBuilder jsonSb)
+        private static void ProbeEnumToJson(Type type, StringBuilder sb, StringBuilder jsonSb)
         {
             sb.AppendLine($"[enum] {type.FullName}");
             var names = Enum.GetNames(type);

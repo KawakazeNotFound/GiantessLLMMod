@@ -32,6 +32,7 @@ namespace GiantessLLMMod.Core
         private Type _eyesFlexType;
         private Type _mouthFlexType;
         private Type _handCutsceneType;
+        private Type _handType;
         private Type _soundLoudnessType;
         private Type _activityConfigType;
         private Type _scriptObjRefType;
@@ -61,6 +62,7 @@ namespace GiantessLLMMod.Core
             _eyesFlexType = FindType("EyesFlexType");
             _mouthFlexType = FindType("MouthFlexType");
             _handCutsceneType = FindType("EHandCutsceneType");
+            _handType = FindType("EHandType");
             _soundLoudnessType = FindType("SoundLoudness");
             _activityConfigType = FindType("CActivityCommonConfig");
             _scriptObjRefType = FindType("ScriptObjectReference");
@@ -116,8 +118,8 @@ namespace GiantessLLMMod.Core
                         _log.LogInfo($"Action gate for '{response.Action}': {gate.Reason}");
 
                     PrepareForQueuedAction(ai, response.Action);
-                    ExecuteAction(ai, response);
-                    logParts.Add($"Action: {response.Action}");
+                    bool invoked = ExecuteAction(ai, response);
+                    logParts.Add($"Action {(invoked ? "invoked" : "not invoked")}: {response.Action}");
                 }
             }
 
@@ -320,164 +322,132 @@ namespace GiantessLLMMod.Core
 
         // ──────────────────── Actions ────────────────────
 
-        private void ExecuteAction(MonoBehaviour ai, LLMActionResponse response)
+        private bool ExecuteAction(MonoBehaviour ai, LLMActionResponse response)
         {
             string action = response?.Action;
             try
             {
                 var activity = _collector.GetAISubComponent(ai, "activity");
                 object playerTarget = CreatePlayerReference();
+                object player = _collector.GetPlayerBehaviour();
 
                 switch (action)
                 {
                     case "face_player":
-                        if (!TryInvokeByName(activity, "qGts_FaceTarget", null, null, playerTarget))
-                            TryInvokeByName(activity, "qGts_TurnToFaceTarget", null, null, playerTarget);
-                        break;
+                        return TryInvokeByName(activity, "qGts_FaceTarget", null, null, playerTarget)
+                            || TryInvokeByName(activity, "qGts_TurnToFaceTarget", null, null, playerTarget);
 
                     case "walk_to_player":
-                        if (!TryInvokeByName(activity, "qGts_ChaseTarget", null, null, playerTarget))
-                            TryGotoTarget(activity, playerTarget);
-                        break;
+                        return TryInvokeByName(activity, "qGts_ChaseTarget", null, null, playerTarget)
+                            || TryGotoTarget(activity, playerTarget);
 
                     case "pick_up":
-                        TryPickUpTarget(activity, playerTarget);
-                        break;
+                        return TryPickUpTarget(activity, playerTarget);
 
                     case "eat":
-                        TryInvokeWithNullCallbacks(activity, "qGts_EatHeldObject");
-                        break;
+                        return TryInvokeHeldPlayerAction(activity, "qGts_EatHeldObject", player);
 
                     case "put_in_mouth":
-                        TryInvokeWithNullCallbacks(activity, "qGts_PutInMouth");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_PutInMouth");
 
                     case "swallow":
-                        TryInvokeWithNullCallbacks(activity, "qGts_Mouth_Swallow");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_Mouth_Swallow");
 
                     case "take_out_mouth":
-                        TryInvokeWithNullCallbacks(activity, "qGts_Mouth_TakeOut");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_Mouth_TakeOut");
 
                     case "pat_stomach":
                         // qGts_PatStomach(Action, Single fDuration, CActivityCommonConfig)
-                        TryInvokeWithNullCallbacks(activity, "qGts_PatStomach");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_PatStomach");
 
                     case "tease_mouth":
-                        TryInvokeWithNullCallbacks(activity, "qGts_TeaseMouth");
-                        break;
+                        return TryInvokeHeldPlayerAction(activity, "qGts_TeaseMouth", player);
 
                     case "tease_stomach":
-                        TryInvokeWithNullCallbacks(activity, "qGts_TeaseStomach");
-                        break;
+                        return TryInvokeHeldPlayerAction(activity, "qGts_TeaseStomach", player);
 
                     case "drop":
-                        TryInvokeWithNullCallbacks(activity, "qGts_Drop");
-                        break;
+                        return TryInvokeHeldPlayerAction(activity, "qGts_Drop", player);
 
                     case "dangle":
-                        TryInvokeWithNullCallbacks(activity, "qGts_DangleOverMouth");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_DangleOverMouth");
 
                     case "dangle_drop":
-                        TryInvokeWithNullCallbacks(activity, "qGts_Dangle_Drop");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_Dangle_Drop");
 
                     case "burp":
-                        if (!TryInvokeByName(ai, "Burp", false, false, 0f, (Action)null))
-                            TryInvokeWithNullCallbacks(activity, "qGts_Burp");
-                        break;
+                        return TryInvokeByName(ai, "Burp", false, false, 0f, (Action)null)
+                            || TryInvokeWithNullCallbacks(activity, "qGts_Burp");
 
                     case "follow_player":
-                        TryFollowTarget(activity, playerTarget);
-                        break;
+                        return TryFollowTarget(activity, playerTarget);
 
                     case "put_on_stomach":
-                        TryInvokeWithNullCallbacks(activity, "qGts_PutOnStomach");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_PutOnStomach");
 
                     case "lick":
-                        TryInvokeWithNullCallbacks(activity, "qGts_LickHeldObject");
-                        break;
+                        return TryInvokeHeldPlayerAction(activity, "qGts_LickHeldObject", player);
 
                     case "put_in_bra":
-                        TryInvokeWithNullCallbacks(activity, "qGts_PutInBra");
-                        break;
+                        return TryInvokeHeldPlayerAction(activity, "qGts_PutInBra", player);
 
                     case "invite_into_mouth":
-                        TryInvokeWithNullCallbacks(activity, "qGts_InviteIntoMouth");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_InviteIntoMouth");
 
                     case "play_with_food":
-                        TryInvokeWithNullCallbacks(activity, "qGts_PlayWithFood");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_PlayWithFood");
 
                     case "lay_down":
-                        TryInvokeWithNullCallbacks(activity, "qGts_LayDownFace_Start");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_LayDownFace_Start");
 
                     case "stand_up":
-                        TryInvokeWithNullCallbacks(activity, "qGts_LayDownFace_End");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_LayDownFace_End");
 
                     case "place_on_surface":
-                        TryPlacePlayerOnSurface(ai, activity, response);
-                        break;
+                        return TryPlacePlayerOnSurface(ai, activity, response);
 
                     case "look_around":
-                        TryInvokeWithNullCallbacks(activity, "qGts_LookAround");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_LookAround");
 
                     case "roam":
-                        TryInvokeWithNullCallbacks(activity, "qGts_Roam");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_Roam");
 
                     case "random_tease":
-                        TryInvokeWithNullCallbacks(activity, "qGts_RandomTease");
-                        break;
+                        return TryInvokeHeldPlayerAction(activity, "qGts_RandomTease", player);
 
                     case "mouth_activity":
-                        TryInvokeWithNullCallbacks(activity, "qGts_MouthActivity");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_MouthActivity");
 
                     case "lower_into_mouth":
-                        TryInvokeWithNullCallbacks(activity, "qGts_LowerIntoMouth");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_LowerIntoMouth");
 
                     case "fly_into_mouth":
-                        TryInvokeByName(activity, "qGts_FlyIntoMouth", playerTarget, null, null, null, null);
-                        break;
+                        return TryInvokeByName(activity, "qGts_FlyIntoMouth", playerTarget, null, null, null, null);
 
                     case "poke_player":
-                        TryInvokeByName(activity, "qGts_Poke", playerTarget, null, false, 0f, null);
-                        break;
+                        return TryInvokeByName(activity, "qGts_Poke", playerTarget, null, false, 0f, null);
 
                     case "take_off_stomach":
-                        TryInvokeWithNullCallbacks(activity, "qGts_TakeOffStomach");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_TakeOffStomach");
 
                     case "watch_stomach":
-                        TryInvokeWithNullCallbacks(activity, "qGts_WatchStomachScreen");
-                        break;
+                        return TryInvokeWithNullCallbacks(activity, "qGts_WatchStomachScreen");
 
                     case "crawl_begin":
-                        TryInvokeByName(activity, "qGts_Crawl_Begin", playerTarget, null);
-                        break;
+                        return TryInvokeByName(activity, "qGts_Crawl_Begin", playerTarget, null);
 
                     case "hover_foot":
-                        TryInvokeByName(activity, "qGts_HoverFootOverTarget_Start", null, null, playerTarget, true, 0.25f, true, 1.0f, 0.0f);
-                        break;
+                        return TryInvokeByName(activity, "qGts_HoverFootOverTarget_Start", null, null, playerTarget, true, 0.25f, true, 1.0f, 0.0f);
 
                     default:
                         _log.LogWarning($"Unknown action: {action}");
-                        break;
+                        return false;
                 }
             }
             catch (Exception ex)
             {
                 _log.LogError($"Failed to execute action '{action}': {ex}");
+                return false;
             }
         }
 
@@ -555,11 +525,64 @@ namespace GiantessLLMMod.Core
 
         // ──────────────────── Invoke Helpers ────────────────────
 
-        /// <summary>
-        /// Try to invoke a qGts_ method, filling in null/default for Action callbacks and CActivityCommonConfig.
-        /// These methods typically have optional params — we try to call with minimum params.
-        /// </summary>
-        private bool TryInvokeWithNullCallbacks(object target, string methodName)
+        private bool TryInvokeHeldPlayerAction(object activity, string methodName, object player)
+        {
+            if (!TryGetHeldPlayerHand(activity, player, out object hand, out string reason))
+            {
+                _log.LogWarning($"[HandSelection] Skipped {methodName}: {reason}");
+                return false;
+            }
+
+            _log.LogInfo($"[HandSelection] Request {methodName}: hand={hand}; {reason}");
+            return TryInvokeWithNullCallbacks(activity, methodName, hand);
+        }
+
+        private bool TryGetHeldPlayerHand(object activity, object player, out object hand, out string reason)
+        {
+            hand = null;
+            object rightPlayer = GetMemberValue(activity, "heldObjectPlayer");
+            object leftPlayer = GetMemberValue(activity, "heldObjectLeftHandPlayer");
+            bool rightMatch = player != null && ReferenceEquals(rightPlayer, player);
+            bool leftMatch = player != null && ReferenceEquals(leftPlayer, player);
+            reason = $"player={DescribePlayerIdentity(player)}, right={DescribePlayerIdentity(rightPlayer)}, left={DescribePlayerIdentity(leftPlayer)}";
+
+            if (player == null)
+            {
+                reason = "scene has no player FPSBehaviour; " + reason;
+                return false;
+            }
+
+            if (rightMatch == leftMatch)
+            {
+                reason = (rightMatch ? "player matches both hands; " : "player is not held in either hand; ") + reason;
+                return false;
+            }
+
+            hand = ParseEnum(_handType, rightMatch ? "Right" : "Left");
+            if (hand == null)
+            {
+                reason = "EHandType is missing the selected hand; " + reason;
+                return false;
+            }
+
+            return true;
+        }
+
+        private static string DescribePlayerIdentity(object player)
+        {
+            return player == null ? "none" : $"{player.GetType().Name}#{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(player):x}";
+        }
+
+        public string DescribePlayerHandState()
+        {
+            EnsureCache();
+            var ai = _collector.GetFirstGiantessAI();
+            var activity = _collector.GetAISubComponent(ai, "activity");
+            bool resolved = TryGetHeldPlayerHand(activity, _collector.GetPlayerBehaviour(), out object hand, out string reason);
+            return $"hand={(resolved ? hand.ToString() : "unresolved")}; {reason}";
+        }
+
+        private bool TryInvokeWithNullCallbacks(object target, string methodName, object hand = null)
         {
             if (target == null)
             {
@@ -595,8 +618,20 @@ namespace GiantessLLMMod.Core
                     else if (pt == typeof(string)) args[i] = null;
                     else if (pt.IsEnum)
                     {
-                        var vals = Enum.GetValues(pt);
-                        args[i] = vals.Length > 0 ? vals.GetValue(0) : null;
+                        if (pt == _handType)
+                        {
+                            if (hand == null || hand.GetType() != pt)
+                            {
+                                _log.LogWarning($"[HandSelection] Skipped {methodName}: explicit EHandType required");
+                                return false;
+                            }
+                            args[i] = hand;
+                        }
+                        else
+                        {
+                            var vals = Enum.GetValues(pt);
+                            args[i] = vals.Length > 0 ? vals.GetValue(0) : null;
+                        }
                     }
                     else if (pt.IsValueType) args[i] = Activator.CreateInstance(pt);
                     else args[i] = null; // Action, Config, ScriptObjectReference → null is fine
@@ -673,12 +708,25 @@ namespace GiantessLLMMod.Core
             bool hasHeldObject = GetMemberValue(activity, "heldObject") != null
                 || GetMemberValue(activity, "heldObjectLeftHand") != null;
 
-            if (!hasHeldObject)
-                TryPickUpTarget(activity, playerTarget);
+            object hand;
+            if (hasHeldObject)
+            {
+                if (!TryGetHeldPlayerHand(activity, _collector.GetPlayerBehaviour(), out hand, out string reason))
+                {
+                    _log.LogWarning($"[HandSelection] Skipped place_on_surface: {reason}");
+                    return false;
+                }
+            }
+            else
+            {
+                hand = ParseEnum(_handType, "Right");
+                if (hand == null || !TryPickUpTarget(activity, playerTarget))
+                    return false;
+            }
 
-            TryGotoTarget(activity, surfaceRef);
+            if (!TryGotoTarget(activity, surfaceRef))
+                return false;
 
-            object hand = ParseEnum(FindType("EHandType"), "Right") ?? FirstEnumValue(FindType("EHandType"));
             bool dropOk = TryInvokeByName(activity, "qGts_Drop",
                 null,       // OnDropped
                 true,       // bAllowExpressionChanges
@@ -687,10 +735,7 @@ namespace GiantessLLMMod.Core
                 true,       // bAllowBendDown
                 hand);
 
-            if (!dropOk)
-                dropOk = TryInvokeWithNullCallbacks(activity, "qGts_Drop");
-
-            _log.LogInfo($"place_on_surface plan queued: target={target.Name}, hint={hint}, dropOk={dropOk}");
+            _log.LogInfo($"place_on_surface plan requested: target={target.Name}, hint={hint}, hand={hand}, dropOk={dropOk}");
             return dropOk;
         }
 
@@ -1100,7 +1145,8 @@ namespace GiantessLLMMod.Core
         {
             if (activity == null || playerTarget == null) return false;
 
-            object hand = ParseEnum(FindType("EHandType"), "Right") ?? FirstEnumValue(FindType("EHandType"));
+            object hand = ParseEnum(_handType, "Right");
+            if (hand == null) return false;
             object ikModifier = ParseEnum(FindType("AvatarIKGoalModifier"), "Grab")
                 ?? ParseEnum(FindType("AvatarIKGoalModifier"), "Normal")
                 ?? FirstEnumValue(FindType("AvatarIKGoalModifier"));
@@ -1402,7 +1448,7 @@ namespace GiantessLLMMod.Core
 
                 if (_fpsType != null)
                 {
-                    var fps = UnityEngine.Object.FindObjectOfType(_fpsType);
+                    var fps = _collector.GetPlayerBehaviour();
                     if (fps != null)
                     {
                         var fpsComp = fps as Component;

@@ -66,9 +66,9 @@ namespace GiantessLLMMod.Core
         private FieldInfo _ai_conversation;
         private FieldInfo _ai_horniness;
         private FieldInfo _ai_hunger;
-        private PropertyInfo _ai_heldObject;
-        private PropertyInfo _ai_heldObjectLeft;
-        private PropertyInfo _ai_objectInMouth;
+        private PropertyInfo _activity_heldObject;
+        private PropertyInfo _activity_heldObjectLeft;
+        private PropertyInfo _activity_objectInMouth;
         private PropertyInfo _ai_playerMemory;
         private MethodInfo _ai_rememberEntity;
 
@@ -486,10 +486,11 @@ namespace GiantessLLMMod.Core
             }
 
             // Held objects
-            gs.HeldObjectName = GetPropertyStr(ai, _ai_heldObject);
-            gs.HeldObjectLeftName = GetPropertyStr(ai, _ai_heldObjectLeft);
+            var activity = GetField<object>(ai, _ai_activityInterface, null);
+            gs.HeldObjectName = GetPropertyStr(activity, _activity_heldObject);
+            gs.HeldObjectLeftName = GetPropertyStr(activity, _activity_heldObjectLeft);
 
-            var mouthObj = GetPropertyValue(ai, _ai_objectInMouth);
+            var mouthObj = GetPropertyValue(activity, _activity_objectInMouth);
             gs.HasObjectInMouth = mouthObj != null;
 
             // Memory about player
@@ -828,21 +829,12 @@ namespace GiantessLLMMod.Core
             _ai_hunger = FindField(_giantessAIType, "m_Hunger");
 
             // Properties for held objects
-            _ai_heldObject = _giantessAIType.GetProperty("heldObject", flags)
-                ?? _giantessAIType.GetProperty("HeldObject", flags);
-            _ai_heldObjectLeft = _giantessAIType.GetProperty("heldObjectLeftHand", flags)
-                ?? _giantessAIType.GetProperty("HeldObjectLeftHand", flags);
-            _ai_objectInMouth = _giantessAIType.GetProperty("objectInMouth", flags)
-                ?? _giantessAIType.GetProperty("ObjectInMouth", flags);
+            var activityType = _ai_activityInterface?.FieldType;
+            _activity_heldObject = activityType?.GetProperty("heldObject", flags);
+            _activity_heldObjectLeft = activityType?.GetProperty("heldObjectLeftHand", flags);
+            _activity_objectInMouth = activityType?.GetProperty("objectInMouth", flags);
             _ai_playerMemory = _giantessAIType.GetProperty("playerMemory", flags)
                 ?? _giantessAIType.GetProperty("PlayerMemory", flags);
-
-            // If properties not found, try fields
-            if (_ai_heldObject == null)
-            {
-                var f = FindField(_giantessAIType, "heldObject", "m_HeldObject", "m_heldObject");
-                // Store as FieldInfo, we'll handle in GetPropertyStr
-            }
 
             _ai_rememberEntity = FindRememberEntityMethod(_giantessAIType);
 
@@ -1106,6 +1098,12 @@ namespace GiantessLLMMod.Core
 
         /// <summary>Get the game assembly.</summary>
         public Assembly GetGameAssembly() => _gameAssembly;
+
+        public MonoBehaviour GetPlayerBehaviour()
+        {
+            RefreshSceneCache();
+            return _cachedFps;
+        }
 
         /// <summary>Get a sub-component field value from a GiantessAI instance.</summary>
         public object GetAISubComponent(Component ai, string subName)
